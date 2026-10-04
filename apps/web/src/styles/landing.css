@@ -1,0 +1,83 @@
+/* Landing page (/) — scoped with the lp- prefix. Base state = final, static frame;
+   motion is layered on only under prefers-reduced-motion:no-preference. */
+.lp{display:block;max-width:none;margin:0;padding:0;overflow-x:clip}
+.lp-wrap{max-width:1180px;margin-inline:auto;padding:0 var(--gutter)}
+.lp h2{font-size:clamp(28px,4.4vw,48px);line-height:1.08;letter-spacing:-.02em;text-wrap:balance}
+.lp-grad{background:linear-gradient(100deg,var(--neon) 10%,var(--teal) 55%,var(--neon) 100%);background-size:220% 100%;-webkit-background-clip:text;background-clip:text;color:transparent}
+
+/* nav */
+.lp-nav{position:sticky;top:0;z-index:30;background:rgba(8,9,8,.72);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line-soft)}
+.lp-nav .lp-wrap{display:flex;align-items:center;gap:var(--s6);height:var(--bar-h)}
+.lp-logo{display:flex;align-items:center;gap:var(--s3);font-weight:700;letter-spacing:.04em;min-height:var(--tap)}
+.lp-links{display:flex;gap:var(--s2);margin-left:var(--s4)}
+.lp-links a{display:inline-flex;align-items:center;min-height:var(--tap);padding:0 var(--s3);color:var(--mut);border-radius:var(--r-sm)}
+.lp-links a:hover{color:var(--txt)}
+.lp-nav .spacer{flex:1}
+
+/* hero */
+.lp-aurora{position:absolute;inset:0;z-index:-3;pointer-events:none}
+.lp-aurora i{position:absolute;border-radius:50%;filter:blur(70px);opacity:.55}
+.lp-aurora i:nth-child(1){width:620px;height:620px;left:-160px;top:-200px;background:radial-gradient(circle,rgba(1,107,229,.7),transparent 65%)}
+.lp-aurora i:nth-child(2){width:560px;height:560px;right:-120px;top:-120px;background:radial-gradient(circle,rgba(16,225,255,.42),transparent 65%)}
+.lp-aurora i:nth-child(3){width:520px;height:520px;left:34%;bottom:-260px;background:radial-gradient(circle,rgba(204,255,0,.3),transparent 65%)}
+.lp-floor{position:absolute;left:-10%;right:-10%;bottom:0;height:58%;z-index:-2;pointer-events:none;overflow:hidden;-webkit-mask-image:linear-gradient(to top,#000 5%,transparent 88%);mask-image:linear-gradient(to top,#000 5%,transparent 88%)}
+.lp-floor::before{content:"";position:absolute;inset:-60px 0 0;background-image:linear-gradient(rgba(204,255,0,.2) 1px,transparent 1px),linear-gradient(90deg,rgba(204,255,0,.2) 1px,transparent 1px);background-size:64px 64px;transform:perspective(520px) rotateX(64deg);transform-origin:50% 100%}
+.lp-noise{position:absolute;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 50% 0,transparent 40%,var(--bg) 100%)}
+.lp-kicker{display:inline-flex;align-items:center;gap:var(--s2);min-height:32px;padding:0 var(--s4);border:1px solid rgba(204,255,0,.35);border-radius:var(--r-pill);background:rgba(204,255,0,.06);font-family:var(--mono);font-size:var(--fs-xs);color:var(--neon);letter-spacing:.04em}
+.lp-kicker b{width:8px;height:8px;border-radius:50%;background:var(--neon);box-shadow:0 0 12px var(--neon)}
+.lp-h1{font-family:var(--serif);font-weight:400;font-size:clamp(46px,5.4vw,76px);line-height:1;letter-spacing:-.02em;margin:var(--s6) 0 var(--s5)}
+.lp-h1 .w{display:inline-block}
+.lp-sub{max-width:54ch;color:var(--mut);font-size:clamp(16px,1.6vw,19px);line-height:1.55}
+.lp-cta{display:flex;flex-wrap:wrap;gap:var(--s3);margin:var(--s8) 0 var(--s6)}
+.lp-cta .btn{position:relative;overflow:hidden}
+
+
+
+
+/* motion (opt-in) */
+@media(prefers-reduced-motion:no-preference){
+  .lp-aurora i:nth-child(1){animation:aur1 22s ease-in-out infinite alternate}
+  .lp-aurora i:nth-child(2){animation:aur2 26s ease-in-out infinite alternate}
+  .lp-aurora i:nth-child(3){animation:aur1 30s ease-in-out infinite alternate-reverse}
+  .lp-floor::before{animation:flow 3.2s linear infinite}
+  .lp-grad{animation:sheen 6s ease-in-out infinite alternate}
+  .lp-kicker b{animation:pulse 1.8s ease-in-out infinite}
+  .js .lp-h1 .w{opacity:0;transform:translateY(.4em);filter:blur(8px);animation:rise .55s cubic-bezier(.2,.8,.2,1) forwards;animation-delay:calc(var(--i) * 45ms + 60ms)}
+  .js .sc .fade{opacity:0;transform:translateY(16px);animation:rise2 .5s cubic-bezier(.2,.8,.2,1) forwards;animation-delay:calc(var(--i, 0) * 70ms + 300ms)}
+  .lp-cta .btn.shine::after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.55) 50%,transparent 65%);transform:translateX(-120%);animation:shine 3.6s ease-in-out infinite 1.5s}
+  .btn:active{transform:translateY(1px)}
+}
+@keyframes aur1{from{transform:translate3d(0,0,0) scale(1)}to{transform:translate3d(90px,70px,0) scale(1.18)}}
+@keyframes aur2{from{transform:translate3d(0,0,0) scale(1.1)}to{transform:translate3d(-100px,60px,0) scale(.92)}}
+@keyframes flow{from{background-position:0 0}to{background-position:0 64px}}
+@keyframes sheen{from{background-position:0 0}to{background-position:100% 0}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes rise{to{opacity:1;transform:none;filter:none}}
+@keyframes rise2{to{opacity:1;transform:none}}
+@keyframes shine{0%,55%{transform:translateX(-120%)}100%{transform:translateX(120%)}}
+
+/* responsive */
+@media(max-width:960px){
+  .lp-links{display:none}
+}
+@media(max-width:760px){
+  .lp-cta .btn{flex:1 1 100%}
+}
+
+/* marketplace strip under the hero */
+.ls-src{padding:var(--s10) 0;border-block:1px solid var(--line-soft)}
+.ls-src .lp-wrap{display:grid;gap:var(--s4);justify-items:center;text-align:center}
+.ls-src-h{margin:0;font-family:var(--mono);font-size:var(--fs-xs);letter-spacing:.14em;text-transform:uppercase;color:var(--mut)}
+.ls-src-list{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:var(--s5) var(--s12)}
+.ls-src-list li{display:flex;align-items:center;justify-content:center;opacity:.9}
+.ls-src-list img{display:block;height:34px;width:auto;max-width:100%}
+.ls-src-list img[alt="Shopee"],.ls-src-list img[alt="Best Buy"]{height:46px}
+@media(max-width:760px){.ls-src{padding:var(--s8) 0}.ls-src-list{gap:var(--s5) var(--s8)}.ls-src-list img{height:26px}.ls-src-list img[alt="Shopee"],.ls-src-list img[alt="Best Buy"]{height:36px}}
+
+/* lean sections */
+.ls-sec{padding:var(--s16) 0;scroll-margin-top:var(--bar-h)}
+.lp .ls-h{font-family:var(--serif);font-weight:400;font-size:clamp(34px,4.6vw,56px);line-height:1.05;letter-spacing:-.02em;margin:0 0 var(--s8)}
+.ls-band{padding:var(--s16) 0;text-align:center}
+.ls-band .lp-wrap{display:grid;gap:var(--s4);justify-items:center}
+.ls-band .ls-h{margin:0}
+.ls-band p{color:var(--mut);font-size:var(--fs-xl);margin:0}

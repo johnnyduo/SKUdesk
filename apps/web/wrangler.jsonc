@@ -1,0 +1,48 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "robinize",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-10-02",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "routes": [
+    { "pattern": "skudesk.lol", "custom_domain": true },
+    { "pattern": "www.skudesk.lol", "custom_domain": true }
+  ],
+  "assets": { "directory": "./dist", "binding": "ASSETS", "run_worker_first": ["/api/*"], "not_found_handling": "404-page" },
+  "triggers": { "crons": ["* * * * *"] },
+  "observability": { "enabled": true, "logs": { "enabled": true, "invocation_logs": true }, "traces": { "enabled": true, "head_sampling_rate": 0.1 } },
+  "kv_namespaces": [{ "binding": "CACHE", "id": "5147e846474f4d6fb4b4f4c5719e8177" }],
+  "d1_databases": [{ "binding": "DB", "database_name": "robinize", "database_id": "ea8e344f-9a08-43d9-811c-0724e24a7f98", "migrations_dir": "worker/migrations" }],
+  "ratelimits": [
+    { "name": "RL_WRITE", "namespace_id": "1001", "simple": { "limit": 5, "period": 60 } },
+    { "name": "RL_READ", "namespace_id": "1002", "simple": { "limit": 30, "period": 60 } },
+    { "name": "RL_COMPARE", "namespace_id": "1003", "simple": { "limit": 10, "period": 60 } }
+  ],
+  "vars": {
+    "MERCHANT_API_BASE": "https://merchantapi.googleapis.com",
+    "MERCHANT_FEED_LABEL": "US",
+    "MERCHANT_LANGUAGE": "en",
+    "MERCHANT_COUNTRY": "US",
+    "MERCHANT_CURRENCY": "USD",
+    "PUBLIC_SITE_ORIGIN": "https://skudesk.lol",
+    "EBAY_API_BASE": "https://api.ebay.com",
+    "QUOTA_SERPAPI_DAILY": "8",
+    "QUOTA_SERPAPI_MONTHLY": "240",
+    "QUOTA_SEARCHAPI_DAILY": "3",
+    "QUOTA_SEARCHAPI_TOTAL": "90",
+    "QUOTA_EBAY_DAILY": "1000",
+    "QUOTA_BESTBUY_DAILY": "2000",
+    "ROBINHOOD_RPC": "https://rpc.testnet.chain.robinhood.com",
+    "V4_POOL_ID": "0xafede3281589f6c8d26792dc3bd81603bb9ccc5ea77ce2dd97f70dbcaf5d5a54",
+    "V4_TOKEN0": "0x0B71c1B397A9d33198e0A6a5701E12011AC84D95",
+    "V4_TOKEN1": "0x8875C482eC20c82bE0f62c16d6F94B92a6050a2A",
+    "V4_TICK_LOWER": "-28080",
+    "V4_TICK_UPPER": "-19860",
+    "V4_TOKEN1_SYMBOL": "mUSDG",
+    "MARKET_RPC_URL": "https://rpc.testnet.chain.robinhood.com",
+    "MARKET_BOOK": "0x8b4dFd26ab2A7Bdfd2090e434bcfB2C10A296E5d",
+    "MARKET_CHAIN_ID": "46630",
+    "MARKET_DEPLOY_BLOCK": "128228560"
+  }
+}

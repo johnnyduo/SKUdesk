@@ -1,0 +1,12 @@
+{
+  "note": "SKUdesk keeper bots on Robinhood Chain Testnet: scripted bots, not people. The addresses are public. Each one was matched to its keeper role from public on-chain behaviour only (side, order sizes, participation), compared with the open strategy code in apps/web/tools/market-common.ts (plansFor). No private key or .env was read. A role is the script's pricing rule against its own reference price for the market (not a market feed); every order that fills trades at the epoch's one clearing price.",
+  "derivedAt": "2026-10-03",
+  "bots": [
+    { "address": "0x269afaf16c8d2d31c30dca433b8c1495028dbb6f", "name": "Bot 1", "keeperIndex": 0, "side": "buy", "role": "buys, limit 0.2-0.6% under the reference", "units": [8, 24] },
+    { "address": "0xc2315054ecbae3dc99fe77047b9173b231be71fc", "name": "Bot 2", "keeperIndex": 1, "side": "buy", "role": "buys, limit 0.3-1.5% over the reference", "units": [4, 14] },
+    { "address": "0xce038d321b54519a85c6f18fc047c0748ec41835", "name": "Bot 3", "keeperIndex": 2, "side": "buy", "role": "buys in 3 of 4 epochs, limit within 1.5% of the reference", "units": [3, 12] },
+    { "address": "0xde1a19597053c107880cbb9c04655431b120aac5", "name": "Bot 4", "keeperIndex": 3, "side": "sell", "role": "sells, limit 0.2-0.6% over the reference", "units": [8, 24] },
+    { "address": "0x6d1144ba9d06135c8a9a8931847cef310a9c252a", "name": "Bot 5", "keeperIndex": 4, "side": "sell", "role": "sells, limit 0.3-1.5% under the reference", "units": [4, 14] },
+    { "address": "0x5256a51a259f4acd9afac1b39ac580075d8928ad", "name": "Bot 6", "keeperIndex": 5, "side": "sell", "role": "sells in 3 of 4 epochs, limit within 1.5% of the reference", "units": [3, 12] }
+  ]
+}

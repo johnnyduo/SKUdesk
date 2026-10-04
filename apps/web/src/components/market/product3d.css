@@ -1,0 +1,53 @@
+/* Product3D: scoped under .p3d. Uses the global tokens with fallbacks so it also works standalone. */
+.p3d{--acc:#ccff00;position:relative;width:100%;height:100%;min-height:220px;overflow:hidden;container-type:inline-size;border-radius:var(--r,12px);
+  background:radial-gradient(120% 90% at 50% 38%,#121513 0%,#0a0b0a 60%,#070807 100%);border:1px solid var(--line,rgba(255,255,255,.1));color:var(--txt,#f5f6f2);isolation:isolate;-webkit-tap-highlight-color:transparent}
+.p3d *{min-width:0}
+.p3d-glow{position:absolute;inset:0;z-index:0;pointer-events:none;background:radial-gradient(60% 46% at 50% 80%,color-mix(in srgb,var(--acc) 26%,transparent) 0,transparent 72%),radial-gradient(70% 50% at 50% 30%,color-mix(in srgb,var(--acc) 7%,transparent) 0,transparent 70%)}
+.p3d-glow::after{content:"";position:absolute;inset:0;opacity:0}
+.p3d[data-pulse=up] .p3d-glow::after{background:radial-gradient(70% 55% at 50% 80%,rgba(62,213,152,.5),transparent 74%);animation:p3d-fade 1.1s ease-out}
+.p3d[data-pulse=down] .p3d-glow::after{background:radial-gradient(70% 55% at 50% 80%,rgba(255,122,122,.46),transparent 74%);animation:p3d-fade 1.1s ease-out}
+@keyframes p3d-fade{0%{opacity:1}100%{opacity:0}}
+
+.p3d-stage{position:absolute;inset:0;z-index:1}
+.p3d-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:pan-y;cursor:grab;outline:none;user-select:none;-webkit-user-select:none}
+.p3d-canvas.grab{cursor:grabbing}
+.p3d-canvas:focus-visible{outline:2px solid var(--neon,#ccff00);outline-offset:-3px;border-radius:var(--r,12px)}
+.p3d-art{position:absolute;inset:0;display:grid;place-items:center;padding:56px 14px 60px}
+.p3d-art .p3d-svg{width:100%;height:100%;max-height:100%;filter:drop-shadow(0 14px 18px rgba(0,0,0,.55));animation:p3d-float 6s ease-in-out infinite}
+.p3d-art.loading .p3d-svg{opacity:.28;animation:p3d-skel 1.4s ease-in-out infinite}
+@keyframes p3d-float{50%{transform:translateY(-4px)}}
+@keyframes p3d-skel{50%{opacity:.14}}
+
+.p3d-top,.p3d-bot{position:absolute;left:0;right:0;z-index:2;pointer-events:none;padding:12px 14px}
+.p3d-top{top:0;display:grid;gap:2px;padding-right:56px}
+.p3d-id{display:flex;align-items:center;gap:8px}
+.p3d-dot{width:8px;height:8px;border-radius:50%;background:var(--acc);box-shadow:0 0 10px var(--acc);flex:none}
+.p3d-sym{font-size:12px;letter-spacing:.08em;font-weight:600;color:var(--txt,#f5f6f2)}
+.p3d-name{font-size:12px;line-height:1.3;color:var(--mut,#a6aba3);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.p3d-compat{display:none;font-size:12px;color:var(--mut,#a6aba3)}
+.p3d-chip{justify-self:start;margin-top:4px;padding:2px 8px;border:1px solid var(--line,rgba(255,255,255,.12));border-radius:999px;background:rgba(14,16,15,.6);font-size:11px;line-height:1.4;letter-spacing:.02em;color:var(--dim,#8d938b);white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.p3d-bot{bottom:0;display:flex;align-items:flex-end;justify-content:space-between;gap:8px;background:linear-gradient(to top,rgba(8,9,8,.72),rgba(8,9,8,0))}
+.p3d-pricebox{display:grid;gap:1px}
+.p3d-price{font-size:clamp(22px,9.4cqw,34px);line-height:1.1;font-weight:700;letter-spacing:-.01em;font-variant-numeric:tabular-nums;color:var(--txt,#f5f6f2)}
+.p3d-price.none{font-size:clamp(15px,5.6cqw,20px);font-weight:600;color:var(--mut,#a6aba3);letter-spacing:0}
+.p3d-price.tick-up{animation:p3d-pup 1.1s ease-out}
+.p3d-price.tick-down{animation:p3d-pdn 1.1s ease-out}
+@keyframes p3d-pup{0%{color:var(--green,#3ed598);text-shadow:0 0 18px rgba(62,213,152,.7)}100%{color:var(--txt,#f5f6f2);text-shadow:none}}
+@keyframes p3d-pdn{0%{color:var(--red,#ff7a7a);text-shadow:0 0 18px rgba(255,122,122,.7)}100%{color:var(--txt,#f5f6f2);text-shadow:none}}
+.p3d-sub{display:flex;gap:10px;align-items:center;font-size:12px;color:var(--mut,#a6aba3);font-variant-numeric:tabular-nums;white-space:nowrap}
+.p3d-chg{display:inline-flex;align-items:center;gap:4px;font-weight:600}
+.p3d-chg.up{color:var(--green,#3ed598)}.p3d-chg.down{color:var(--red,#ff7a7a)}.p3d-chg.flat{color:var(--mut,#a6aba3)}
+.p3d-hint{font-size:11px;color:var(--dim,#8d938b);letter-spacing:.04em;text-transform:uppercase;padding-bottom:3px;display:none}
+.p3d-reset{position:absolute;top:6px;right:6px;z-index:3;width:44px;height:44px;border-radius:50%;border:1px solid var(--line,rgba(255,255,255,.12));background:rgba(14,16,15,.7);color:var(--txt,#f5f6f2);display:grid;place-items:center;cursor:pointer;backdrop-filter:blur(4px)}
+.p3d-reset[hidden]{display:none}
+.p3d-reset:hover{border-color:var(--acc)}
+.p3d-reset:focus-visible{outline:2px solid var(--neon,#ccff00);outline-offset:2px}
+
+@container (min-width:280px){.p3d-hint{display:block}}
+@container (max-width:279px){.p3d-name{display:none}.p3d-compat{display:block}.p3d-top,.p3d-bot{padding:10px 12px}.p3d-ep{display:none}}
+@container (min-width:440px){.p3d-name{font-size:13px}.p3d-top,.p3d-bot{padding:14px 18px}}
+
+@media (prefers-reduced-motion:reduce){
+  .p3d-art .p3d-svg,.p3d-art.loading .p3d-svg{animation:none}
+  .p3d[data-pulse=up] .p3d-glow::after,.p3d[data-pulse=down] .p3d-glow::after,.p3d-price.tick-up,.p3d-price.tick-down{animation:none}
+}

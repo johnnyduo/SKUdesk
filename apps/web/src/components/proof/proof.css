@@ -1,0 +1,52 @@
+/* Chain proof: badges, summary strip, pill, mandate line, verify list. Scoped under .pf-*; tokens from styles/global.css. */
+.pf-ico{display:inline-grid;place-items:center;min-width:1.2em;margin-right:6px;font-weight:700}
+.pf-badge{display:inline-flex;align-items:baseline;flex-wrap:wrap;font-size:var(--fs-xs);line-height:1.45;color:var(--mut);overflow-wrap:anywhere}
+.pf-badge.ok{color:var(--green)}
+.pf-badge.bad{color:var(--red)}
+.pf-badge.na{color:var(--amber)}
+.pf-badge.wait .pf-ico,.pf-sum.wait .pf-ico{animation:pf-pulse 1.2s ease-in-out infinite}
+@keyframes pf-pulse{50%{opacity:.35}}
+
+.pf-sum{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--s2) var(--s4);padding:var(--s3) var(--s4);border:1px solid var(--line);border-left:3px solid var(--line);border-radius:var(--r-sm);background:var(--code);min-height:84px}
+.pf-sum.ok{border-left-color:var(--green)}.pf-sum.ok .pf-ico{color:var(--green)}
+.pf-sum.bad{border-left-color:var(--red)}.pf-sum.bad .pf-ico{color:var(--red)}
+.pf-sum.na{border-left-color:var(--amber)}.pf-sum.na .pf-ico{color:var(--amber)}
+.pf-sum.wait{border-left-color:var(--teal)}.pf-sum.wait .pf-ico{color:var(--teal)}
+.pf-sum-text{display:grid;gap:2px;flex:1 1 260px}
+.pf-sum-head{font-weight:600;font-size:var(--fs-md);line-height:1.4}
+.pf-sum-sub{color:var(--mut);font-size:var(--fs-sm);line-height:1.45;overflow-wrap:anywhere}
+.pf-again{flex:none}
+.pf-again[aria-disabled=true]{opacity:.6;cursor:progress}
+
+.pf-pill{margin-left:auto}  /* tones come from the global .pill.good / .warn / .bad */
+
+.pf-mandate{font-size:var(--fs-sm);line-height:1.45;color:var(--txt)}
+.pf-mandate.ok .pf-ico{color:var(--green)}
+.pf-mandate.na .pf-ico{color:var(--amber)}
+
+.pf-verify{display:grid;gap:var(--s3)}
+.pf-verify h3{font-size:var(--fs-lg)}
+.pf-note{color:var(--mut);font-size:var(--fs-sm);line-height:1.5}
+.pf-addrs{margin:0;display:grid;gap:var(--s2)}
+.pf-addrs>div{display:grid;grid-template-columns:220px minmax(0,1fr);gap:var(--s3);align-items:baseline}
+.pf-addrs dt{color:var(--mut);font-size:var(--fs-sm)}
+.pf-addrs dd{margin:0}
+.pf-txs{margin:0;padding:0;list-style:none;display:grid;gap:var(--s2)}
+.pf-txs li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--s1) var(--s3);align-items:baseline;padding:var(--s2) var(--s3);background:var(--code);border:1px solid var(--line-soft);border-radius:var(--r-sm)}
+.pf-slot{grid-column:1/-1;min-height:calc(var(--fs-xs) * 1.45)}  /* reserves the badge line so a check does not shift the list */
+.pf-tx-title{font-size:var(--fs-sm);overflow-wrap:anywhere}
+.pf-hash{font-size:var(--fs-xs);overflow-wrap:anywhere}
+.pf-link{color:var(--teal);text-decoration:underline;text-underline-offset:3px;display:inline-flex;align-items:center;min-height:32px}
+.pf-link:hover{color:var(--txt)}
+@media(pointer:coarse),(max-width:700px){
+  /* 44 px hit area without moving anything: the extra height is cancelled by a negative block margin. */
+  .pf-link{min-height:var(--tap);margin-block:calc((32px - var(--tap)) / 2)}
+}
+
+@media(max-width:700px){
+  .pf-addrs>div,.pf-txs li{grid-template-columns:minmax(0,1fr)}
+  .pf-again{width:100%}
+  .pf-sum{min-height:136px}
+  .pf-slot{min-height:calc(var(--fs-xs) * 1.45 * 3)}
+}
+@media(prefers-reduced-motion:reduce){.pf-badge.wait .pf-ico,.pf-sum.wait .pf-ico{animation:none}}

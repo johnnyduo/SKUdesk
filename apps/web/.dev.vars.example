@@ -1,0 +1,11 @@
+# Copy to apps/web/.dev.vars (git-ignored) for local `wrangler dev`. Leave a value empty to keep that
+# integration in MOCK mode. GOOGLE_SA_JSON must be the service-account JSON on ONE line.
+ADMIN_TOKEN=
+GOOGLE_SA_JSON=
+MERCHANT_ACCOUNT_ID=
+MERCHANT_DATA_SOURCE_ID=
+EBAY_CLIENT_ID=
+EBAY_CLIENT_SECRET=
+BESTBUY_API_KEY=
+SERPAPI_KEY=
+SEARCH_API_KEY=

@@ -1,0 +1,138 @@
+---
+interface Card { kind: 'run' | 'market'; rank: number; name: string; src: string; line: string; result: string; recorded: boolean; category?: string; listCents?: number }
+interface Props { cards: Card[]; words: string[]; ariaLabel: string; gradFrom?: number }
+const { cards, words, ariaLabel, gradFrom = 5 } = Astro.props;
+const tiles = cards.map((c) => ({ src: c.src, rank: c.rank }));
+---
+<section class:list={['sc', { 'sc-static': cards.length < 2 }]} data-tiles={JSON.stringify({ tiles })} aria-labelledby="hero-h">
+<div class="sc-sticky">
+<div class="lp-aurora" aria-hidden="true"><i></i><i></i><i></i></div>
+<div class="lp-floor" aria-hidden="true"></div>
+<div class="lp-noise" aria-hidden="true"></div>
+
+<div class="sc-inner">
+<div class="sc-copy">
+<span class="lp-kicker fade" style="--i:0"><b></b>Built on Robinhood Chain</span>
+<h1 id="hero-h" class="lp-h1">{words.map((w, i) => <><span class:list={['w', { 'lp-grad': i >= gradFrom }]} style={`--i:${i}`}>{w}</span>{' '}</>)}</h1>
+<p class="lp-sub fade" style="--i:2">Each finds the lowest total cost from identical offers. One price clears on-chain.</p>
+<p class="sc-scope fade" style="--i:3">Live category: Technology</p>
+<div class="lp-cta fade" style="--i:4"><a class="btn lg shine" href="/show">Watch AI trade</a><a class="btn lg ghost" href="/app/create">Deploy your agent</a></div>
+</div>
+
+<div class="sc-stage">
+<div class="sc-ring" role="img" aria-label={ariaLabel}>
+<div class="sc-canvas" aria-hidden="true"></div>
+<svg class="sc-poster" viewBox="0 0 400 300" aria-hidden="true" focusable="false">
+<defs><linearGradient id="sc-g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b1f1b"/><stop offset="1" stop-color="#0b0c0b"/></linearGradient></defs>
+<g stroke="rgba(255,255,255,.16)" stroke-width="1.5" fill="url(#sc-g)">
+<rect x="68" y="92" width="62" height="78" rx="9" opacity=".5"/>
+<rect x="270" y="92" width="62" height="78" rx="9" opacity=".5"/>
+<rect x="104" y="78" width="74" height="94" rx="10" opacity=".75"/>
+<rect x="222" y="78" width="74" height="94" rx="10" opacity=".75"/>
+<rect x="150" y="52" width="100" height="126" rx="13" stroke="#CCFF00"/>
+</g>
+{cards[0] && <image href={cards[0].src} x="160" y="64" width="80" height="100" preserveAspectRatio="xMidYMid meet"/>}
+</svg>
+<div class="sc-rail" aria-hidden="true">{cards.map((_, i) => <i class:list={[{ on: i === 0 }]}></i>)}</div>
+</div>
+<div class="sc-captions">
+{cards.map((c, i) => (
+<article class:list={['sc-card', { 'is-active': i === 0 }]} data-i={i} data-kind={c.kind} data-category={c.category} data-list-cents={c.listCents}>
+<img class="sc-img" src={c.src} alt="" width="60" height="95" loading="lazy" />
+<div class="sc-meta">
+<p class="sc-name">{c.name}</p>
+{c.recorded && <p class="sc-ok">✓ Identical match</p>}
+<p class="sc-line">{c.line}</p>
+<p class="sc-net">{c.result}</p>
+{c.recorded && <a class="sc-rec" href="/show">On-chain run</a>}
+{c.kind === 'market' && <a class="sc-go" href="/market">Open the market →</a>}
+</div>
+</article>
+))}
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<script>
+import { startShowcase } from '../../showcase/showcase.ts';
+const root = document.querySelector<HTMLElement>('.sc');
+if (root) startShowcase(root, JSON.parse(root.dataset.tiles ?? '{"tiles":[]}'));
+</script>
+
+<style is:global>
+.sc{position:relative;height:220vh;isolation:isolate;margin-top:calc(var(--bar-h) * -1)} /* tuck under the sticky nav so the first screen is the pinned frame; .sc-sticky's padding-top clears it */
+.sc-sticky{position:sticky;top:0;height:100svh;min-height:560px;overflow:hidden;padding-top:var(--bar-h)}
+.sc-inner{position:relative;height:100%;max-width:1180px;margin-inline:auto;padding:0 var(--gutter);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:var(--s10);align-items:center}
+.sc-copy{min-width:0}
+.sc-scope{display:inline-block;margin:var(--s4) 0 0;padding:2px var(--s3);border:1px solid var(--line);border-radius:var(--r-pill);font-family:var(--mono);font-size:var(--fs-xs);letter-spacing:.08em;color:var(--mut);text-transform:uppercase}
+.sc-stage{position:relative;display:grid;grid-template-rows:minmax(0,1fr) auto;gap:var(--s4);min-width:0;height:min(calc(100svh - var(--bar-h) - 40px),780px)}
+.sc-ring{position:relative;min-height:0}
+.sc-canvas,.sc-poster{position:absolute;inset:0;width:100%;height:100%}
+.sc-gl{display:block;width:100%;height:100%}
+.sc-poster{transition:opacity .35s ease}
+.sc.sc-ready .sc-poster{opacity:0}
+.sc-rail{position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:center;gap:10px}
+.sc-rail i{width:22px;height:4px;border-radius:2px;background:rgba(255,255,255,.14);transition:background .25s}
+.sc-rail i.on{background:var(--neon)}
+.sc-captions{display:grid;min-height:132px;align-content:start}
+.sc-card{grid-area:1/1;display:flex;gap:var(--s4);align-items:flex-start;opacity:0;transform:translateY(8px);transition:opacity .25s ease,transform .25s ease;pointer-events:none}
+.sc-card.is-active{opacity:1;transform:none;pointer-events:auto}
+.sc-card:not(.is-active) .sc-rec,.sc-card:not(.is-active) .sc-go{visibility:hidden} /* no invisible Tab stop; the text stays in the accessibility tree */
+.sc-img{display:none}
+.sc-meta{display:grid;gap:2px}
+.sc-name{font-size:var(--fs-xl);font-weight:600;margin:0}
+.sc-ok{margin:0;font-family:var(--mono);font-size:var(--fs-xs);letter-spacing:.06em;color:var(--neon)}
+.sc-line{margin:0;color:var(--mut);font-size:var(--fs-md)}
+.sc-net{margin:0;font-family:var(--mono);font-size:var(--fs-lg);color:var(--txt)}
+.sc-rec{justify-self:start;margin-top:var(--s1);font-family:var(--mono);font-size:var(--fs-xs);letter-spacing:.08em;text-transform:uppercase;color:var(--teal);text-decoration:none}
+.sc-rec:hover,.sc-go:hover{text-decoration:underline}
+.sc-go{justify-self:start;margin-top:var(--s1);font-family:var(--mono);font-size:var(--fs-xs);letter-spacing:.08em;text-transform:uppercase;color:var(--neon);text-decoration:none}
+@media (min-width:761px){
+  .sc .lp-cta{margin-top:var(--s6)}
+  .sc-card{justify-content:center;text-align:center}
+  .sc-meta{justify-items:center}
+  .sc-rec{justify-self:center}
+}
+@media (max-width:760px){
+  .sc{height:260vh}
+  .sc-inner{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto;gap:var(--s3);align-items:start}
+  .sc-sticky{padding-bottom:var(--s5)}
+  .sc-stage{order:-1;height:100%;gap:var(--s3)}
+  /* small screens: spend the height on the ring, not on a tall kicker, a 3-line headline or roomy captions */
+  .sc .lp-kicker{display:flex;width:fit-content;min-height:24px;padding:0 var(--s3);font-size:11px}
+  .sc .lp-h1{font-size:clamp(30px,9vw,46px);margin:var(--s2) 0 var(--s3)}
+  .sc .lp-sub{margin:0}
+  .sc .sc-scope{margin-top:var(--s2)}
+  .sc .lp-cta{margin:var(--s4) 0 0;gap:var(--s2)}
+  .sc .lp-cta .btn.lg{min-height:44px}
+  .sc-captions{min-height:0}
+  .sc-name{font-size:var(--fs-lg)}
+  .sc-line{font-size:var(--fs-sm)}
+  .sc-net{font-size:var(--fs-md)}
+}
+/* No pin: reduced motion or a short screen (<= 700px tall), the .sc-static fallback, or no JS: cards stacked as text */
+@media (prefers-reduced-motion:reduce),(max-height:700px){
+  .sc{height:auto}
+  .sc-sticky{position:static;height:auto;min-height:0;padding-top:calc(var(--bar-h) + var(--s6));padding-bottom:var(--s16)}
+  .sc-inner{display:block;height:auto}
+  .sc-copy{max-width:640px}
+  .sc-stage{height:auto;display:block;margin-top:var(--s8)}
+  .sc-ring{display:none}
+  .sc-captions{display:grid;gap:var(--s4);min-height:0}
+  .sc-card{grid-area:auto;opacity:1;transform:none;pointer-events:auto;padding:var(--s4);border:1px solid var(--line);border-radius:var(--r)}
+  .sc-img{display:block;width:60px;height:95px;object-fit:contain}
+  .sc .sc-card .sc-rec,.sc .sc-card .sc-go{visibility:visible}
+}
+html:not(.js) .sc,.sc.sc-static{height:auto}
+html:not(.js) .sc-sticky,.sc.sc-static .sc-sticky{position:static;height:auto;min-height:0;padding-top:calc(var(--bar-h) + var(--s6));padding-bottom:var(--s16)}
+html:not(.js) .sc-inner,.sc.sc-static .sc-inner{display:block;height:auto}
+html:not(.js) .sc-copy,.sc.sc-static .sc-copy{max-width:640px}
+html:not(.js) .sc-stage,.sc.sc-static .sc-stage{height:auto;display:block;margin-top:var(--s8)}
+html:not(.js) .sc-ring,.sc.sc-static .sc-ring{display:none}
+html:not(.js) .sc-captions,.sc.sc-static .sc-captions{display:grid;gap:var(--s4);min-height:0}
+html:not(.js) .sc-card,.sc.sc-static .sc-card{grid-area:auto;opacity:1;transform:none;pointer-events:auto;padding:var(--s4);border:1px solid var(--line);border-radius:var(--r)}
+html:not(.js) .sc-img,.sc.sc-static .sc-img{display:block;width:60px;height:95px;object-fit:contain}
+html:not(.js) .sc .sc-card .sc-rec,.sc.sc-static .sc-card .sc-rec,html:not(.js) .sc .sc-card .sc-go,.sc.sc-static .sc-card .sc-go{visibility:visible}
+</style>

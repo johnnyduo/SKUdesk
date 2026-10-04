@@ -1,0 +1,53 @@
+---
+// "On-chain track record": counts from the BlindBook history and the AI agent run. Static numbers in the HTML; a small script counts them up when the band scrolls into view.
+interface Props { rounds: string; bids: string; bidders: string; fills: string; profit: string; runLine: string; headBlock: string }
+const { rounds, bids, bidders, fills, profit, runLine, headBlock } = Astro.props;
+const tiles = [
+  { v: rounds, k: 'Rounds cleared' },
+  { v: bids, k: 'Sealed bids' },
+  { v: bidders, k: 'Agent wallets' },
+  { v: fills, k: 'Fills' },
+  { v: profit, k: 'AI run profit', sub: runLine },
+];
+---
+<section class="ls-sec tr" aria-labelledby="tr-h"><div class="lp-wrap">
+<h2 class="ls-h" id="tr-h">On-chain track record.</h2>
+<ul class="tr-grid">
+{tiles.map((t) => (
+<li class="tr-tile"><b class="tr-v" data-v={t.v}>{t.v}</b><span class="tr-k">{t.k}</span>{t.sub && <small class="tr-sub">{t.sub}</small>}</li>
+))}
+</ul>
+<p class="tr-foot">Counted from testnet events up to block {headBlock}.</p>
+</div></section>
+
+<script>
+  // Count the figures up once, when the band is first seen. Reduced motion and no-JS keep the final numbers.
+  const els = [...document.querySelectorAll<HTMLElement>('.tr-v')];
+  if (els.length && !matchMedia('(prefers-reduced-motion: reduce)').matches && 'IntersectionObserver' in window) {
+    const run = (el: HTMLElement) => {
+      const full = el.dataset.v ?? el.textContent ?? '';
+      const m = full.match(/^(\$?)([\d,]+)(\.\d+)?$/);
+      if (!m) return;
+      const target = Number(m[2].replace(/,/g, '')), t0 = performance.now(), dur = 1100;
+      const tick = (now: number) => {
+        const p = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - p, 3), n = Math.round(target * e);
+        el.textContent = p >= 1 ? full : `${m[1]}${String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}${m[3] ?? ''}`;
+        if (p < 1) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    };
+    const io = new IntersectionObserver((entries) => { for (const e of entries) if (e.isIntersecting) { run(e.target as HTMLElement); io.unobserve(e.target); } }, { threshold: 0.6 });
+    els.forEach((el) => io.observe(el));
+  }
+</script>
+
+<style>
+.tr-grid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:var(--s4)}
+.tr-tile{display:grid;gap:var(--s2);align-content:start;padding:var(--s5);border:1px solid var(--line);border-radius:var(--s4);background:linear-gradient(180deg,rgba(20,22,20,.9),rgba(12,14,13,.9))}
+.tr-v{font-family:var(--serif);font-weight:400;font-size:clamp(34px,3.6vw,52px);line-height:1;letter-spacing:-.02em;color:var(--neon);font-variant-numeric:tabular-nums}
+.tr-k{font-family:var(--mono);font-size:var(--fs-xs);letter-spacing:.1em;text-transform:uppercase;color:var(--mut)}
+.tr-sub{color:var(--dim);font-size:var(--fs-sm);line-height:1.4}
+.tr-foot{margin:var(--s6) 0 0;color:var(--dim);font-size:var(--fs-sm)}
+@media(max-width:1100px){.tr-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:700px){.tr-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>

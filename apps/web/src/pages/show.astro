@@ -1,0 +1,43 @@
+---
+import Base from '../layouts/Base.astro';
+import Shell from '../components/shell/Shell.astro';
+import '../components/show/show.css';
+import Player from '../components/show/Player';
+import { run, net, provenance, runNote } from '../components/show/lib';
+import Provenance from '../components/ui/Provenance.astro';
+const chainId = Number(run.meta.chainId);
+const isFixture = chainId !== 46630;
+---
+<Base title="Agent trade | SKUdesk" description="Agent trade: an AI agent working under an on-chain budget. The contract re-derives the agent's numbers and refuses requests it must not accept.">
+<Shell>
+<div class="show">
+{isFixture && (
+  <div class="sh-devbanner" role="alert">
+    <div class="sh-wrap">
+      <b>DEV FIXTURE</b>
+      <span>This page shows a saved run from a local test chain (chain id {chainId}), not the real Robinhood Chain run. Do not treat any hash here as public proof.</span>
+    </div>
+  </div>
+)}
+<div class="sh-honesty" role="region" aria-label="What is real in this saved run">
+  <div class="sh-wrap">
+    <div class:list={['sh-honest-badge', { real: !isFixture }]}>
+      <span class="tag">{isFixture ? 'SAVED RUN / DEV' : 'ON-CHAIN RUN'}</span>
+      <span data-testid="run-provenance">
+        <b>Run on {net.name}{provenance.date ? `, ${provenance.date}` : ''}.</b>
+        {isFixture
+          ? ' Hashes come from a local chain and cannot be checked on a public explorer. Nothing here is live.'
+          : ` ${runNote(provenance)} Prices are a fixed snapshot, the token is mUSDG (a test token), and no goods moved.`}
+      </span>
+    </div>
+    <div class="sh-honest-chips">
+      <span style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12px"><Provenance kind="onchain" note="transaction hashes" /><Provenance kind="snapshot" note="listing prices" /><Provenance kind="agent" note="received, listed, sold" /></span>
+    </div>
+  </div>
+</div>
+<div id="show-main" class="sh-wrap">
+  <Player client:load />
+</div>
+</div>
+</Shell>
+</Base>

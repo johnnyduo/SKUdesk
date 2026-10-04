@@ -1,0 +1,83 @@
+# Dependencies
+node_modules
+
+# Build output
+dist/
+.astro/
+
+# Cloudflare Wrangler / Workers
+.wrangler/
+.dev.vars
+.dev.vars.*
+apps/web/worker/worker-configuration.d.ts
+!.dev.vars.example
+
+# Vite cache
+.vite/
+
+# Foundry (packages/contracts) — keep foundry.lock and the forge-std submodule
+packages/contracts/out/
+packages/contracts/cache/
+packages/contracts/broadcast/
+packages/contracts/cache_hardhat/
+packages/contracts/.env
+
+# Environment / secrets (keep the example files)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.keystore
+*.secret
+*.secrets
+secrets/
+serviceaccount*.json
+*-sa.json
+*.sa.json
+id_rsa*
+id_ed25519*
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# TypeScript
+*.tsbuildinfo
+
+# Test / coverage
+coverage/
+.nyc_output/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+*.swp
+*~
+
+# Local notes
+*.local.md
+notes/
+plans/
+
+# Local verification output
+.shots/
+
+# Price seed outputs
+seed-out/
+apps/web/seed-out/
+
+# throwaway local-chain deployment outputs written by the verification scripts
+packages/contracts/deployments/31337.json
+packages/contracts/deployments/*-31337.json

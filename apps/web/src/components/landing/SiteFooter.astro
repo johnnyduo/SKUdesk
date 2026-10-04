@@ -1,0 +1,66 @@
+---
+// The landing footer: where to go, where the contracts live, and a one-click "add the network" for a wallet.
+import { JOURNEY } from '../../lib/journey';
+import { CHAIN, DEPLOYMENT, explorer } from '../../lib/run';
+import blindbook from '../../data/blindbook.json';
+const chain = { chainId: '0x' + CHAIN.id.toString(16), chainName: CHAIN.name, nativeCurrency: { name: 'Sepolia Ether', symbol: 'ETH', decimals: 18 }, rpcUrls: [CHAIN.rpc + '/rpc'], blockExplorerUrls: [CHAIN.explorer] };
+const onchain: [string, string][] = [
+  ['Block explorer', CHAIN.explorer],
+  ['BlindBook market', explorer.address((blindbook as { book: string }).book)],
+  ['Agent vault', explorer.address(DEPLOYMENT.core)],
+  ['mUSDG test token', explorer.address(DEPLOYMENT.token)],
+];
+---
+<footer class="sf"><div class="lp-wrap">
+<div class="sf-grid">
+<div class="sf-brand">
+<a class="lp-logo" href="/" aria-label="SKUdesk home"><span class="logo-mark"><svg width="16" height="16" viewBox="0 0 32 32" aria-hidden="true"><path d="M8 22 16 8l8 14" stroke="#CCFF00" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>SKUdesk</a>
+<p>Agents compete on the same product in sealed rounds.</p>
+</div>
+<nav class="sf-col" aria-label="Explore"><h3>Explore</h3>
+{JOURNEY.map((j) => <a href={j.href}>{j.label}</a>)}
+</nav>
+<nav class="sf-col" aria-label="On-chain"><h3>On-chain</h3>
+{onchain.map(([l, h]) => <a href={h} target="_blank" rel="noopener noreferrer">{l} ↗</a>)}
+</nav>
+<div class="sf-col"><h3>Network</h3>
+<button type="button" class="btn ghost sf-add" data-add-chain={JSON.stringify(chain)}>Add Robinhood Chain Testnet</button>
+<small class="sf-id">Chain ID {CHAIN.id}</small>
+<small class="sf-note" role="status" aria-live="polite"></small>
+</div>
+</div>
+<div class="sf-bar"><span>SKUdesk · Robinhood Chain testnet · Prices shown are a fixed snapshot until live feeds are connected · Not financial advice</span><span><a href="/app/policies/">Mandate</a> · <a href="/app/integrations/">Dependencies</a></span></div>
+</div></footer>
+
+<script>
+  // One click adds the network to the visitor's wallet (EIP-3085). Nothing is sent anywhere else.
+  const btn = document.querySelector<HTMLButtonElement>('[data-add-chain]');
+  const note = document.querySelector<HTMLElement>('.sf-note');
+  btn?.addEventListener('click', async () => {
+    const eth = (window as any).ethereum;
+    if (!eth?.request) { if (note) note.textContent = 'No wallet found. Install a wallet such as MetaMask, then try again.'; return; }
+    try {
+      await eth.request({ method: 'wallet_addEthereumChain', params: [JSON.parse(btn.dataset.addChain ?? '{}')] });
+      if (note) note.textContent = 'Network added.';
+    } catch (e: any) {
+      if (note) note.textContent = e?.code === 4001 ? 'Request cancelled.' : 'Could not add the network.';
+    }
+  });
+</script>
+
+<style>
+.sf{border-top:1px solid var(--line-soft);padding:var(--s12) 0 var(--s8);color:var(--mut);background:linear-gradient(180deg,rgba(14,16,15,0),rgba(14,16,15,.7))}
+.sf-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr 1.2fr;gap:var(--s10)}
+.sf-brand p{margin:var(--s4) 0 0;max-width:30ch;color:var(--mut);font-size:var(--fs-md);line-height:1.5}
+.sf h3{margin:0 0 var(--s3);font-family:var(--mono);font-size:var(--fs-xs);font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+.sf-col{display:grid;gap:var(--s1);align-content:start;justify-items:start}
+.sf-col a{display:inline-flex;align-items:center;min-height:32px;color:var(--mut);text-decoration:none;font-size:var(--fs-md)}
+.sf-col a:hover{color:var(--txt)}
+.sf-add{min-height:44px;font-size:var(--fs-sm)}
+.sf-id{margin-top:var(--s2);color:var(--dim);font-family:var(--mono);font-size:var(--fs-xs)}
+.sf-note{min-height:18px;margin-top:var(--s1);color:var(--neon);font-size:var(--fs-sm)}
+.sf-bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--s3) var(--s6);margin-top:var(--s10);padding-top:var(--s6);border-top:1px solid var(--line-soft);color:var(--dim);font-size:var(--fs-xs)}
+.sf-bar a{display:inline-flex;align-items:center;min-height:var(--tap);color:var(--mut)}
+@media(max-width:900px){.sf-grid{grid-template-columns:1fr 1fr;gap:var(--s8)}.sf-brand{grid-column:1/-1}}
+@media(max-width:520px){.sf-grid{grid-template-columns:1fr}}
+</style>

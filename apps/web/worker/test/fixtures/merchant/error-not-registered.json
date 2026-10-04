@@ -1,0 +1,1 @@
+{"error":{"code":401,"message":"GCP project with id robinize-test and number 000000000000 is not registered with the merchant account. Follow these steps https://developers.google.com/merchant/api/guides/quickstart#register_as_a_developer to register the GCP project with the merchant account then try calling the API again in 5 minutes.","status":"UNAUTHENTICATED"}}

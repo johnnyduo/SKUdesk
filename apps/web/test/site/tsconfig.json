@@ -1,0 +1,31 @@
+{
+  "compilerOptions": {
+    "target": "es2022",
+    "module": "es2022",
+    "moduleResolution": "bundler",
+    "lib": ["es2023", "dom", "dom.iterable"],
+    "jsx": "react-jsx",
+    "types": [],
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "allowImportingTsExtensions": true,
+    "isolatedModules": true,
+    "resolveJsonModule": true
+  },
+  "files": [
+    "../../src/lib/api.ts",
+    "../../src/lib/labels.ts",
+    "../../src/components/commerce/PublishListing.tsx",
+    "../../src/components/integrations/LiveConnectors.tsx",
+    "../../src/components/commerce/PriceCompare.tsx",
+    "../../src/lib/chain-proof.ts",
+    "../../src/components/proof/useChainProof.ts",
+    "../../src/components/proof/Proof.tsx",
+    "../../src/components/motion/useRevealOnce.ts",
+    "../../src/components/show/Player.tsx",
+    "../../src/components/show/parts.tsx",
+    "../../src/components/flow/AgentDesk.tsx",
+    "../../src/components/commerce/RadarSweep.tsx"
+  ]
+}

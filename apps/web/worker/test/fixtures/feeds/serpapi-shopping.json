@@ -1,0 +1,6 @@
+{"search_metadata":{"id":"fixture","status":"Success"},"search_parameters":{"engine":"google_shopping","q":"iPhone 16 Pro Clear MagSafe Case","gl":"us","hl":"en"},"shopping_results":[
+{"position":1,"title":"iPhone 16 Pro Clear MagSafe Case","product_id":"7366082511916788769","product_link":"https://www.google.com/search?ibp=oshop&q=x&prds=catalogid:7366082511916788769&hl=en&gl=us&udm=28","source":"Example Store","multiple_sources":true,"price":"$10.49","extracted_price":10.49,"thumbnail":"https://serpapi.com/searches/fixture/images/1.webp","delivery":"Free delivery"},
+{"position":2,"title":"Clear MagSafe Case for iPhone 16 Pro Max","product_id":"111","product_link":"https://www.google.com/search?ibp=oshop&prds=catalogid:111","source":"Other Store","price":"$8.99","extracted_price":8.99,"delivery":"$5.99 delivery"},
+{"position":3,"title":"iPhone 16 Pro Clear MagSafe Case","product_id":"222","product_link":"https://www.google.com/search?ibp=oshop&prds=catalogid:222","source":"Used Store","price":"$4.00","extracted_price":4,"second_hand_condition":"used"},
+{"position":4,"title":"iPhone 16 Pro Clear MagSafe Case","product_id":"333","product_link":"https://www.google.com/search?ibp=oshop&prds=catalogid:333","source":"UK Store","price":"£7.00","extracted_price":7}
+]}

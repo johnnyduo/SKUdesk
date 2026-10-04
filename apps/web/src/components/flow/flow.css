@@ -1,0 +1,134 @@
+/* Workflow diagram. Scoped under .wf. Uses the tokens from global.css only. */
+.wf{margin:0;display:grid;gap:12px;container-type:inline-size;min-width:0}
+.wf-svg{width:100%;height:auto;display:block;overflow:visible}
+.wf-tall{display:none;max-width:400px;margin-inline:auto}
+@container (max-width:859px){
+  .wf-wide{display:none}
+  .wf-tall{display:block}
+}
+
+/* lanes */
+.wf-lane rect{fill:rgba(255,255,255,.015);stroke:var(--line);stroke-width:1.5}
+.wf-lane.on rect{fill:rgba(204,255,0,.03);stroke:rgba(204,255,0,.4);stroke-dasharray:7 5}
+.wf-lane-tag{font-family:var(--mono);font-size:13px;font-weight:700;letter-spacing:.05em;fill:var(--mut);paint-order:stroke;stroke:var(--elev,#141614);stroke-width:12px;stroke-linejoin:round}
+.wf-lane.on .wf-lane-tag{fill:var(--neon)}
+.wf-tall .wf-lane-tag{font-size:11px;letter-spacing:.02em;stroke-width:10px}
+
+/* edges */
+.wf-edge{stroke-width:2;transition:opacity .35s,stroke-width .35s}
+.wf-edge.money{stroke:var(--green)}
+.wf-edge.data{stroke:var(--teal);stroke-opacity:.85}
+.wf-edge.attested{stroke:var(--amber);stroke-dasharray:6 5}
+.wf-edge.on{stroke-width:3}
+.wf-edge.atk{stroke:var(--red);stroke-opacity:1;stroke-width:3.2}
+.wf-edge.dim{opacity:.32}
+.wf-mk.money{fill:var(--green)}.wf-mk.data{fill:var(--teal)}.wf-mk.attested{fill:var(--amber)}.wf-mk.bad{fill:var(--red)}
+
+/* edge labels: dark halo keeps text legible where it crosses a line */
+.wf-elabel{font-family:var(--sans);font-size:13.5px;font-weight:500;fill:var(--mut);paint-order:stroke;stroke:var(--elev,#141614);stroke-width:5px;stroke-linejoin:round;transition:opacity .35s,fill .35s}
+.wf-elabel.money{fill:#8fe7c1}.wf-elabel.data{fill:#8be9fb}.wf-elabel.attested{fill:var(--amber)}
+.wf-elabel.on{fill:var(--txt)}
+.wf-elabel.dim{opacity:.5}
+.wf-tall .wf-elabel{font-size:12px;stroke-width:4px}
+
+/* nodes */
+.wf-box{fill:var(--elev);stroke-width:1.6;transition:stroke .35s,filter .35s,fill .35s}
+.wf-node.enforced .wf-box{stroke:rgba(204,255,0,.55)}
+.wf-node.hash .wf-box{stroke:rgba(16,225,255,.7)}
+.wf-node.attested .wf-box{stroke:rgba(255,178,36,.8);stroke-dasharray:6 4}
+.wf-node.plain .wf-box{stroke:rgba(255,255,255,.4)}
+.wf-node.on .wf-box{stroke-width:2.6;filter:drop-shadow(0 0 7px rgba(204,255,0,.4))}
+.wf-node.hash.on .wf-box{filter:drop-shadow(0 0 7px rgba(16,225,255,.45))}
+.wf-node.enforced.on .wf-box{stroke:var(--neon)}
+.wf-node.hash.on .wf-box{stroke:var(--teal)}
+.wf-node.plain.on .wf-box{stroke:#fff;filter:drop-shadow(0 0 7px rgba(255,255,255,.35))}
+.wf-node.bad .wf-box{stroke:var(--red);stroke-width:3;fill:#1b0f0f;filter:drop-shadow(0 0 10px rgba(255,90,90,.55))}
+.wf-node.dim{opacity:.62}
+.wf-node{transition:opacity .35s}
+.wf-title{font-family:var(--sans);font-size:16px;font-weight:700;fill:var(--txt)}
+.wf-sub{font-family:var(--sans);font-size:13.5px;fill:var(--mut)}
+.wf-tall .wf-title{font-size:15px}
+.wf-tall .wf-sub{font-size:12px}
+.wf-node.think .wf-box{animation:wf-think 1.1s ease-in-out infinite}
+@keyframes wf-think{50%{stroke-width:4;filter:drop-shadow(0 0 12px rgba(255,255,255,.5))}}
+.wf-dots circle{fill:var(--txt);animation:wf-dot 1s infinite}
+.wf-dots circle:nth-child(2){animation-delay:.18s}
+.wf-dots circle:nth-child(3){animation-delay:.36s}
+@keyframes wf-dot{0%,100%{opacity:.25}50%{opacity:1}}
+
+/* the commit check list */
+.wf-check circle{fill:none;stroke:var(--dim);stroke-width:1.6;transition:stroke .3s,fill .3s}
+.wf-check path{fill:none;stroke:var(--dim);stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.wf-check text{font-family:var(--sans);font-size:13.5px;fill:var(--txt)}
+.wf-tall .wf-check text{font-size:12px}
+.wf-check.calm text{fill:var(--mut)}
+.wf-check.pass circle{stroke:var(--green);animation:wf-ring .4s ease both}
+.wf-check.pass path{stroke:var(--green);stroke-dasharray:16;stroke-dashoffset:16;animation:wf-tick .4s ease both}
+.wf-check.pass:nth-child(1) path,.wf-check.pass:nth-child(1) circle{animation-delay:.25s}
+@keyframes wf-tick{to{stroke-dashoffset:0}}
+@keyframes wf-ring{from{stroke:var(--dim)}}
+.wf-check.fail circle{fill:var(--red);stroke:var(--red)}
+.wf-check.fail path{stroke:#1a0505;stroke-width:2.2}
+.wf-check.fail text{fill:var(--red);font-weight:700}
+.wf-check.fail{animation:wf-flash .5s ease 3}
+@keyframes wf-flash{50%{opacity:.35}}
+
+/* packets */
+.wf-packet.money circle{fill:var(--green);stroke:#0a2a1d;stroke-width:1}
+.wf-packet.money text{font:700 11px var(--sans);fill:#06210f}
+.wf-packet.data rect{fill:var(--teal)}
+.wf-packet.attested rect{fill:var(--amber)}
+.wf-packet.bad circle{fill:var(--red);stroke:#3b0a0a;stroke-width:1.2}
+.wf-packet.bad text{font:700 12px var(--sans);fill:#2a0505}
+
+/* stamp */
+.wf-stamp rect{fill:rgba(20,6,6,.94);stroke:var(--red);stroke-width:3.5}
+.wf-stamp-h{font-family:var(--mono);font-weight:700;font-size:22px;letter-spacing:.14em;fill:var(--red)}
+.wf-stamp-s{font-family:var(--mono);font-weight:700;font-size:15px;fill:#ffc9c9}
+.wf-stamp>*{transform-box:fill-box;transform-origin:center;animation:wf-stamp .5s cubic-bezier(.2,1.5,.4,1) both}
+@keyframes wf-stamp{0%{opacity:0;transform:scale(2.6)}60%{opacity:1}100%{opacity:1;transform:scale(1)}}
+
+/* legend + caption (HTML, so they reflow and stay readable) */
+.wf-legend{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px 18px;font-size:var(--fs-xs);color:var(--mut)}
+.wf-legend li{display:inline-flex;align-items:center;gap:8px}
+.wf-legend .sw{display:inline-block;width:22px;height:14px;border-radius:4px;border:2px solid;background:var(--elev)}
+.wf-legend .sw.enforced{border-color:var(--neon)}
+.wf-legend .sw.hash{border-color:var(--teal);border-style:dashed}
+.wf-legend .sw.attested{border-color:var(--amber);border-style:dashed}
+.wf-legend .sw.plain{border-color:rgba(255,255,255,.45)}
+.wf-legend .pk{display:inline-grid;place-items:center;width:16px;height:16px;font:700 11px/1 var(--sans);font-style:normal}
+.wf-legend .pk.money{border-radius:50%;background:var(--green);color:#06210f}
+.wf-legend .pk.data{width:11px;height:11px;margin:0 2px;background:var(--teal);transform:rotate(45deg);border-radius:2px}
+.wf-cap{display:grid;gap:4px;padding:12px 14px;border:1px solid var(--line);border-left:3px solid var(--neon);border-radius:var(--r-sm);background:var(--inset);font-size:var(--fs-sm);line-height:1.55;color:var(--txt)}
+.wf-cap-stage{font-family:var(--mono);font-size:var(--fs-xs);letter-spacing:.06em;text-transform:uppercase;color:var(--neon)}
+.wf[data-stage="4"] .wf-cap{border-left-color:var(--red)}
+.wf[data-stage="4"] .wf-cap-stage{color:var(--red)}
+
+/* compact embed */
+.wf.compact{gap:8px}
+.wf.compact .wf-title{font-size:18px}
+.wf.compact .wf-tall .wf-title{font-size:15px}
+.wf.compact .wf-check text{font-size:14.5px}
+.wf.compact .wf-wide{max-width:900px;margin-inline:auto}
+.wf.compact .wf-tall .wf-check text{font-size:12px}
+.wf.compact .wf-legend{font-size:var(--fs-xs)}
+
+@media(prefers-reduced-motion:reduce){
+  .wf-packet,.wf-dots{display:none}
+  .wf-node.think .wf-box,.wf-check.fail{animation:none}
+  .wf-check.pass path{animation:none;stroke-dashoffset:0}
+  .wf-check.pass circle{animation:none}
+  .wf-stamp>*{animation:none}
+  .wf-edge,.wf-node,.wf-box,.wf-elabel{transition:none}
+}
+
+/* embed inside The Show: a collapsible panel under the sticky control bar */
+.sh-map{margin-top:var(--s5);background:var(--elev);border:1px solid var(--line);border-radius:var(--r);padding:0 var(--s4) var(--s4)}
+.sh-map>summary{list-style:none;display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--s1) var(--s3);min-height:var(--tap);padding:var(--s3) 0;cursor:pointer;font-weight:600;font-size:var(--fs-lg)}
+.sh-map:not([open]){padding-bottom:0}
+.sh-map>summary::-webkit-details-marker{display:none}
+.sh-map>summary::before{content:'▸';color:var(--neon);transition:transform .2s;display:inline-block;width:16px;font-size:var(--fs-md)}
+.sh-map[open]>summary::before{transform:rotate(90deg)}
+.sh-map>summary small{color:var(--mut);font-size:var(--fs-xs);font-weight:400;letter-spacing:.04em;margin-left:auto}
+.sh-map>summary:focus-visible{outline:2px solid var(--neon);outline-offset:2px}
+.sh-map .wf{margin-top:var(--s1)}

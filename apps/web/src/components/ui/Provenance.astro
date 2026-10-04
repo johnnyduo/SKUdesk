@@ -1,0 +1,8 @@
+---
+// Small quiet chip: where a value comes from. <Provenance kind="onchain" /> or <Provenance kind="snapshot" note="Oct 2" />
+import { PROVENANCE, type Provenance } from '../../lib/provenance';
+interface Props { kind: Provenance; note?: string }
+const { kind, note } = Astro.props;
+const p = PROVENANCE[kind];
+---
+<span class={`prov prov-${kind}`} title={p.tip}>{p.label}{note ? <span class="prov-n"> · {note}</span> : null}</span>

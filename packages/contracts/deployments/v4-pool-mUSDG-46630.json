@@ -1,0 +1,73 @@
+{
+  "chainId": 46630,
+  "currency0": "0x0B71c1B397A9d33198e0A6a5701E12011AC84D95",
+  "currency1": "0x8875C482eC20c82bE0f62c16d6F94B92a6050a2A",
+  "deployer": "0x6129C88CE91ACdf5c1E42188B1aF88C2166a5501",
+  "fee": 3000,
+  "hooks": "0x0000000000000000000000000000000000000000",
+  "initialPriceStablePerUnit": "10.990000",
+  "initialSqrtPriceX96": "23899055485173685887908959771",
+  "initialTick": -23972,
+  "liquidityHelper": "0xF0BDaC9d6A849992D5825ad20A73E6bf1B47e3D4",
+  "note": "Written from the forge simulation right before broadcast; txHashes and blocks filled in from the broadcast receipts. slot0 and liquidity were read back from the chain and match (tick -23972, liquidity 17851181514).",
+  "poolId": "0xafede3281589f6c8d26792dc3bd81603bb9ccc5ea77ce2dd97f70dbcaf5d5a54",
+  "poolManager": "0x8366a39CC670B4001A1121B8F6A443A643e40951",
+  "poolStateSlot": "0x2c06a2b62b70da3a4d7551113aa826f03a01355f7b8d671389058485389cce75",
+  "positionOwner": "0xF0BDaC9d6A849992D5825ad20A73E6bf1B47e3D4",
+  "positionSalt": "0x6e64ce30db77b0d0180e5afd5864871ef23a00f21c48336754742272a0a401b9",
+  "rangeBps": 5000,
+  "seedLiquidity": "17851181514",
+  "seedStable": "10995088966",
+  "seedUnits": "1000000000",
+  "stableDecimals": 6,
+  "stableToken": "0x0B71c1B397A9d33198e0A6a5701E12011AC84D95",
+  "stableTokenSymbol": "mUSDG",
+  "swapHelper": "0xFAbd4D06F31Fc3d5E19b360fFC9A2135645D3Bcb",
+  "tickLower": -28080,
+  "tickSpacing": 60,
+  "tickUpper": -19860,
+  "txHashes": [
+    {
+      "block": 128236851,
+      "hash": "0x3cdbc7ade7f9a72c43186f104d3f7ca2d296abdf96ca6a94756e2ef1a4417d11",
+      "step": "initialize"
+    },
+    {
+      "block": 128236859,
+      "hash": "0x248faa984ce4a46ae4e49061ba5f17fef4961622e628910421ad06579c1a664c",
+      "step": "mint tIP16P"
+    },
+    {
+      "block": 128236866,
+      "hash": "0xd3fe5e6c7702b0f757bbae8e0cdef6c929930a4d640c560bcee857bafe5a26af",
+      "step": "mint mUSDG"
+    },
+    {
+      "block": 128236877,
+      "hash": "0x885ec887e46b314494baa2b338499c3cd2be37c1ea0b64f1ff50c4715d0c3beb",
+      "step": "approve tIP16P"
+    },
+    {
+      "block": 128236893,
+      "hash": "0x303855716c3b782d2b95f3141778063ed5763407bd80efc95d347a11c0eb07dc",
+      "step": "approve mUSDG"
+    },
+    {
+      "block": 128236900,
+      "hash": "0x37612ee2557086d43c100d5230ffcd51c3d4050c85ae288b06953f19702a4ad8",
+      "step": "modifyLiquidity (seed position)"
+    }
+  ],
+  "unitDecimals": 6,
+  "unitIsCurrency0": false,
+  "unitToken": "0x8875C482eC20c82bE0f62c16d6F94B92a6050a2A",
+  "wasAlreadyInitialized": false,
+  "workerVars": {
+    "V4_POOL_ID": "0xafede3281589f6c8d26792dc3bd81603bb9ccc5ea77ce2dd97f70dbcaf5d5a54",
+    "V4_TICK_LOWER": "-28080",
+    "V4_TICK_UPPER": "-19860",
+    "V4_TOKEN0": "0x0B71c1B397A9d33198e0A6a5701E12011AC84D95",
+    "V4_TOKEN1": "0x8875C482eC20c82bE0f62c16d6F94B92a6050a2A",
+    "V4_TOKEN1_SYMBOL": "mUSDG"
+  }
+}

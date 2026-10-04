@@ -1,0 +1,36 @@
+---
+import Base from '../../../layouts/Base.astro';
+import Shell from '../../../components/shell/Shell.astro';
+import PageHead from '../../../components/shell/PageHead.astro';
+import Explain from '../../../components/shell/Explain.astro';
+import LiveLot from '../../../components/shell/LiveLot.tsx';
+import Provenance from '../../../components/ui/Provenance.astro';
+import { RUN, SNAPSHOT, ECON, REALIZED_CENTS, SPEND_CENTS, CHAIN, usdCents } from '../../../lib/run';
+
+const buy = SNAPSHOT.offers.find((o) => o.id === RUN.accepted.buyOfferId);
+const lot = RUN.meta.lot;
+---
+<Base title="Lots | SKUdesk" description="Every lot the contract created in the run on Robinhood Chain Testnet, with its state and what it settled for in test tokens."><Shell>
+<PageHead title="Lots" sub={`Every lot the contract has created in the run on ${CHAIN.name}.`}/>
+
+<Explain>
+A <b>lot</b> is one purchase of goods, tracked by the contract through a fixed life cycle from funded to settled. The run created exactly one lot: {ECON.units} phone cases with {usdCents(SPEND_CENTS)} escrowed and paid to the test supplier address, and a profit of {usdCents(REALIZED_CENTS)} measured at settlement. No goods moved: the buy, receive and sell steps are the agent’s own reports, and the proceeds were paid from the owner’s test wallet. The lot’s state below is read live from the chain.
+</Explain>
+
+<section class="card" aria-labelledby="lots-h">
+<h2 id="lots-h">Lots in this run <Provenance kind="onchain" note="state read live" /></h2>
+<ul class="ov-lots">
+<li>
+<div class="ov-lot-h"><a class="ov-lot-id mono" href={`/app/lots/${lot}/`}>Lot #{lot}</a><LiveLot client:load id={lot} compact/></div>
+<p class="ov-lot-p">{buy?.title ?? 'Phone case'}<span class="cell-sub"><Provenance kind="snapshot" note={SNAPSHOT.capturedAt.slice(0, 10)} /> buy listing from {buy?.source ?? 'supplier'}, sell listing from {SNAPSHOT.offers.find((o) => o.id === RUN.accepted.sellOfferId)?.source}. Fixed test listings.</span></p>
+<dl class="ov-lot-m">
+<div><dt>Units</dt><dd class="mono">{ECON.units}</dd></div>
+<div><dt>Escrowed (spend)</dt><dd class="mono">{usdCents(SPEND_CENTS)}</dd></div>
+<div><dt>Profit at settlement</dt><dd class="mono neon">+{usdCents(REALIZED_CENTS)}</dd></div>
+</dl>
+<a class="btn ghost" href={`/app/lots/${lot}/`}>Open lot</a>
+</li>
+</ul>
+<p class="ov-gl">In the contract a lot is a plain record (units, landed cost, product hash, state), not a token. A lot can only be created from an opportunity that already passed every on-chain check.</p>
+</section>
+</Shell></Base>

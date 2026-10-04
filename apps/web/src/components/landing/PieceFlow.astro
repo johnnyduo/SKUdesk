@@ -1,0 +1,69 @@
+---
+// "How the pieces connect": one looping pass through the run, lit stage by stage. Pure CSS, no script. Every figure is passed in from lib/run.
+interface Props { cap: string; floor: string; offers: number; tried: number; spend: string; net: string }
+const { cap, floor, offers, tried, spend, net } = Astro.props;
+const I = {
+  limits: '<path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/>',
+  agent: '<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M18.5 16.5l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z"/>',
+  gates: '<path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z"/><path d="M9 12l2 2 4-4"/>',
+  check: '<rect x="5" y="4" width="14" height="16" rx="2"/><path d="M9 9h6M9 13h6M9 17h3"/>',
+  refuse: '<circle cx="12" cy="12" r="8"/><path d="M9 9l6 6M15 9l-6 6"/>',
+  escrow: '<rect x="6" y="11" width="12" height="9" rx="2"/><path d="M9 11V8a3 3 0 016 0v3"/>',
+  settle: '<circle cx="12" cy="12" r="8"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/>',
+};
+const nodes: { zone: 'on' | 'off'; icon: keyof typeof I; title: string; text: string }[] = [
+  { zone: 'on', icon: 'limits', title: 'Owner sets limits', text: `${cap} per run. ${floor} margin floor.` },
+  { zone: 'off', icon: 'agent', title: 'AI agent proposes', text: `Reads ${offers} offers.` },
+  { zone: 'off', icon: 'gates', title: 'Identity gates', text: 'Same product, or no trade.' },
+  { zone: 'on', icon: 'check', title: 'Contract checks', text: 'Re-derives the profit.' },
+  { zone: 'on', icon: 'refuse', title: 'Cheats refused', text: `${tried} tampered requests, all reverted.` },
+  { zone: 'on', icon: 'escrow', title: 'Escrow pays', text: `${spend} locked, paid to the allowlist.` },
+  { zone: 'on', icon: 'settle', title: 'Settled', text: `${net} profit, measured in mUSDG.` },
+];
+---
+<section id="how" class="ls-sec pf" aria-labelledby="pf-h"><div class="lp-wrap">
+<h2 class="ls-h" id="pf-h">Limits it can’t break.</h2>
+<p class="pf-lead">You set a cap per trade and a cap on new commitments per day.</p>
+<ol class="pf-flow">
+{nodes.map((n, i) => (
+<li class="pf-node" data-zone={n.zone} style={`--i:${i}`}>
+<span class="pf-ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={I[n.icon]}></svg></span>
+<div class="pf-tx"><b>{n.title}</b><p>{n.text}</p></div>
+{i < nodes.length - 1 && <i class="pf-dot" aria-hidden="true"></i>}
+</li>
+))}
+</ol>
+<p class="pf-key"><span class="pf-k off">Off-chain: proposes</span><span class="pf-k on">On-chain: decides</span></p>
+</div></section>
+
+<style>
+.pf{--t:12.6s;--lit:#CCFF00;--off:#46D9FF}
+.pf-lead{max-width:62ch;margin:calc(var(--s5) * -1) 0 var(--s8);color:var(--mut);font-size:var(--fs-lg);line-height:1.5}
+.pf-flow{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:30px}
+.pf-node{position:relative;display:grid;gap:var(--s3);align-content:start;padding:var(--s4);border:1px solid var(--line);border-radius:var(--s4);background:var(--elev);min-height:190px;animation:pf-lift var(--t) infinite;animation-delay:calc(var(--i) * var(--t) / 7)}
+.pf-node::before{content:"";position:absolute;inset:-1px;border-radius:inherit;border:1px solid var(--lit);box-shadow:0 0 0 1px var(--lit),0 16px 44px -14px rgba(204,255,0,.5);opacity:0;pointer-events:none;animation:pf-lit var(--t) infinite;animation-delay:calc(var(--i) * var(--t) / 7)}
+.pf-node[data-zone="off"]{border-style:dashed;border-color:rgba(70,217,255,.38)}
+.pf-ic{display:inline-grid;place-items:center;width:44px;height:44px;border-radius:12px;background:var(--inset);color:var(--lit)}
+.pf-node[data-zone="off"] .pf-ic{color:var(--off)}
+.pf-tx b{display:block;font-size:var(--fs-lg);font-weight:600;line-height:1.2;margin-bottom:var(--s1)}
+.pf-tx p{margin:0;color:var(--mut);font-size:14px;line-height:1.5}
+.pf-node:not(:last-child)::after{content:"";position:absolute;top:44px;left:100%;width:30px;height:2px;background:var(--line)}
+.pf-dot{position:absolute;top:40px;left:100%;width:10px;height:10px;margin-left:-5px;border-radius:50%;background:var(--lit);box-shadow:0 0 12px var(--lit);opacity:0;animation:pf-go var(--t) infinite;animation-delay:calc(var(--i) * var(--t) / 7)}
+.pf-key{display:flex;gap:var(--s6);justify-content:center;flex-wrap:wrap;margin:var(--s8) 0 0;font-family:var(--mono);font-size:var(--fs-xs);letter-spacing:.1em;text-transform:uppercase;color:var(--mut)}
+.pf-k::before{content:"";display:inline-block;width:18px;height:10px;margin-right:var(--s2);border:1px solid var(--lit);border-radius:3px;vertical-align:-1px}
+.pf-k.off::before{border:1px dashed var(--off)}
+.pf-flow:hover .pf-node,.pf-flow:hover .pf-node::before,.pf-flow:hover .pf-dot{animation-play-state:paused}
+@keyframes pf-lit{0%{opacity:0}3%,10%{opacity:1}14.3%,100%{opacity:0}}
+@keyframes pf-lift{0%{transform:translateY(0)}3%,10%{transform:translateY(-4px)}14.3%,100%{transform:translateY(0)}}
+@keyframes pf-go{0%,6%{left:100%;opacity:0;margin-left:-35px}7%{opacity:1}13%{opacity:1;margin-left:-5px}14.3%,100%{left:100%;opacity:0;margin-left:-5px}}
+@media(max-width:1100px){.pf-flow{grid-template-columns:repeat(4,minmax(0,1fr));row-gap:34px}.pf-node:nth-child(4n)::after,.pf-node:nth-child(4n) .pf-dot{display:none}}
+@media(max-width:700px){
+  .pf-flow{grid-template-columns:minmax(0,1fr);gap:26px}
+  .pf-node{grid-template-columns:44px minmax(0,1fr);align-items:center;min-height:0;gap:var(--s4)}
+  .pf-node:nth-child(4n)::after,.pf-node:nth-child(4n) .pf-dot{display:block}
+  .pf-node:not(:last-child)::after{top:100%;left:var(--s4);margin-left:21px;width:2px;height:26px}
+  .pf-dot{top:100%;left:var(--s4);margin-left:17px;margin-top:-4px;animation-name:pf-go-v}
+  @keyframes pf-go-v{0%,6%{margin-top:-4px;opacity:0}7%{opacity:1}13%{margin-top:20px;opacity:1}14.3%,100%{margin-top:20px;opacity:0}}
+}
+@media(prefers-reduced-motion:reduce){.pf-node,.pf-node::before,.pf-dot{animation:none}.pf-dot{display:none}}
+</style>

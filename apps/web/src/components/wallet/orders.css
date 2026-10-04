@@ -1,0 +1,43 @@
+/* /app/orders. Scoped under .od-*. Tokens come from global.css; cards, pills and buttons are the shared ones. */
+.od-stack{display:grid;gap:var(--s5);min-width:0}
+.od-status{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s1) var(--s3);font-size:var(--fs-xs);color:var(--mut);line-height:1.5}
+.od-status .btn{min-height:32px;padding:0 var(--s3);font-size:var(--fs-xs)}
+.od-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--dim);flex:none;margin-right:var(--s2)}
+.od-dot.live{background:var(--green)}.od-dot.off{background:var(--amber)}
+
+.od-head{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s2) var(--s3)}
+.od-head h2{font-size:var(--fs-xl)}
+.od-sub{color:var(--mut);font-size:var(--fs-sm);line-height:1.55;max-width:84ch}
+.od-meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:var(--s3)}
+.od-meta>div{display:grid;gap:2px;padding:var(--s3);border:1px solid var(--line);border-radius:var(--r-sm);background:var(--inset);min-width:0}
+.od-meta small{font-size:var(--fs-xs);letter-spacing:.05em;text-transform:uppercase;color:var(--mut)}
+.od-meta b{font-size:var(--fs-md);overflow-wrap:anywhere}
+
+.od-steps{list-style:none;margin:var(--s2) 0 0 6px;padding:0;border-left:2px solid var(--line)}
+.od-step{position:relative;display:grid;gap:var(--s1);padding:0 0 var(--s5) var(--s5);min-width:0}
+.od-step:last-child{padding-bottom:0}
+.od-step::before{content:"";position:absolute;left:-8px;top:5px;width:14px;height:14px;border-radius:50%;background:var(--bg);border:3px solid var(--neon)}
+.od-step.agent::before{border-color:var(--amber)}
+.od-step.next::before{border:2px dashed var(--dim)}
+.od-step-h{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s1) var(--s2)}
+.od-step-h b{font-size:var(--fs-md)}
+.od-step p{font-size:var(--fs-sm);line-height:1.55;color:var(--mut);max-width:84ch;overflow-wrap:anywhere}
+.od-step p.od-who{color:var(--txt)}
+.od-step p.od-note{font-size:var(--fs-xs);border-left:2px solid var(--line-strong);padding-left:var(--s2)}
+.od-step p.od-m{font-size:var(--fs-xs);color:var(--dim)}
+.od-step a{color:var(--teal);text-decoration:underline;text-underline-offset:3px;overflow-wrap:anywhere}
+
+.od-actions{display:flex;flex-wrap:wrap;align-items:flex-start;gap:var(--s4);margin-top:var(--s2)}
+.od-list{list-style:none;margin:0;padding:0;display:grid;gap:var(--s2);font-size:var(--fs-sm);line-height:1.55}
+.od-list li{display:flex;flex-wrap:wrap;gap:var(--s1) var(--s2);min-width:0;overflow-wrap:anywhere}
+.od-list .ok{color:var(--green);font-weight:600}
+.od-list a{color:var(--teal);text-decoration:underline;text-underline-offset:3px}
+.od-trust{display:grid;gap:var(--s3);font-size:var(--fs-sm);line-height:1.6;max-width:84ch}
+.od-trust p{color:var(--mut)}
+.od-trust b{color:var(--txt)}
+.od-fold>summary{cursor:pointer;color:var(--mut);font-size:var(--fs-sm);min-height:36px;display:flex;align-items:center}
+.od-fold[open]>summary{margin-bottom:var(--s3)}
+.od-empty{color:var(--mut);font-size:var(--fs-md);line-height:1.6;max-width:70ch}
+@media(max-width:480px){.od-step{padding-left:var(--s4)}.od-head h2{font-size:var(--fs-lg)}}
+.od-act{display:grid;gap:var(--s2);max-width:46ch;min-width:0}
+.od-hint{font-size:var(--fs-xs);color:var(--mut);line-height:1.5}

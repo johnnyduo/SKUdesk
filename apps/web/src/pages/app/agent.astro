@@ -1,0 +1,118 @@
+---
+import Base from '../../layouts/Base.astro';
+import Shell from '../../components/shell/Shell.astro';
+import PageHead from '../../components/shell/PageHead.astro';
+import Provenance from '../../components/ui/Provenance.astro';
+import AgentDesk from '../../components/flow/AgentDesk';
+import { RUN, SNAPSHOT, ECON, REASONING, PROPOSAL, TXS, FAILED_TX, GUARDS, explorer, usdCents, pct, short } from '../../lib/run';
+
+const offer = (id: string) => SNAPSHOT.offers.find((o) => o.id === id);
+const buy = offer(RUN.accepted.buyOfferId);
+const sell = offer(RUN.accepted.sellOfferId);
+const thinking = RUN.events.find((e) => e.kind === 'agent' && e.title.startsWith('Agent thinking'));
+const latencyMs = PROPOSAL && thinking ? PROPOSAL.at - thinking.at : null;
+const fmtS = (ms: number) => (ms / 1000).toFixed(1) + ' seconds';
+const okTxs = TXS.filter((t) => t.tx.status === 'success').length;
+const failTxs = TXS.length - okTxs;
+const attackCount = RUN.attacks.length;
+const guard = (e: string) => GUARDS.find((g) => g.error === e);
+const attack = (e: string) => RUN.attacks.find((a) => a.error === e);
+const txOf = (prefix: string) => TXS.find((t) => t.title.startsWith(prefix));
+const commitTx = txOf('commitOpportunity');
+const payTx = txOf('markPurchased');
+const capturedAt = new Date(SNAPSHOT.capturedAt).toUTCString().replace(' GMT', ' UTC');
+const PRODUCT_ID = 'CASE-IP16PRO-CLEAR-MAG-001';
+const startedAt = new Date(RUN.meta.startedAt).toUTCString().replace(' GMT', ' UTC');
+---
+<Base title="Agent | SKUdesk" description="How one AI agent proposed a trade, and how the contract kept it honest. Each step is a transaction on Robinhood Chain Testnet that you can open on the explorer."><Shell>
+<PageHead title="Agent" sub="How one AI agent proposed a trade, and how the contract kept it honest" />
+
+<section class="dk-explain" aria-labelledby="wylal">
+  <div class="dk-explain-k" id="wylal">What you are looking at</div>
+  <p>This is the whole system, and the one real run it made on Robinhood Chain Testnet. An AI agent proposed buying <b>{RUN.accepted.units} phone cases</b> and reselling them; a smart contract, a program on the blockchain that holds the money, re-did the agent&rsquo;s maths and refused <b>{attackCount} requests it must not accept</b>. All {RUN.events.length} events are listed below: select one to see where it happens. This page tries to check each transaction against the public RPC when you open it; the explorer links work without that.</p>
+  <p class="dk-gl"><b>Escrow</b> = money locked for one purchase. <b>Revert</b> = the contract refuses and undoes the transaction. <b>Allowlisted</b> = on a list of addresses the owner approved. This page shows a finished run: no AI model runs here, and nothing on this page sends a transaction. It only reads the public RPC to try to check the run.</p>
+</section>
+
+<AgentDesk client:load>
+  <section class="card" aria-labelledby="rs-h">
+    <h2 id="rs-h">What the agent reasoned <Provenance kind="agent" note="model output" /></h2>
+    <p class="note">The agent&rsquo;s own words. It is told the mandate and the offers, and must reply in a fixed format.</p>
+    <ol class="dk-reason">
+      {REASONING.map((r) => <li class:list={[{ skip: /^Skipped/.test(r) }]}>{r}</li>)}
+    </ol>
+  </section>
+
+  <section class="card" aria-labelledby="pr-h">
+    <h2 id="pr-h">What it proposed <Provenance kind="snapshot" note={SNAPSHOT.capturedAt.slice(0, 10)} /></h2>
+    <p class="note">SKU {PRODUCT_ID}. Prices are the listing price before shipping, tax and fees, from a fixed snapshot of test listings taken {capturedAt}. No real stock or delivery is implied.</p>
+    <div class="dk-pair">
+      <div>
+        <small>Buy {RUN.accepted.buyOfferId}</small>
+        <b>{buy ? usdCents(buy.priceCents) : '-'}</b>
+        <span class="t">{buy?.title}</span>
+        <span class="m">+ {buy ? usdCents(buy.shipCents) : '-'} shipping, {buy?.seller}</span>
+      </div>
+      <div class="dk-arrow" aria-hidden="true">&rarr;</div>
+      <div>
+        <small>Sell {RUN.accepted.sellOfferId}</small>
+        <b>{sell ? usdCents(sell.priceCents) : '-'}</b>
+        <span class="t">{sell?.title}</span>
+        <span class="m">free shipping, {sell?.seller}</span>
+      </div>
+    </div>
+    <dl class="dk-facts">
+      <div><dt>Units</dt><dd>{RUN.accepted.units}</dd></div>
+      <div><dt>Landed cost per unit (all costs in)</dt><dd>{usdCents(ECON.landedCents)}</dd></div>
+      <div><dt>Net profit per unit, re-derived by the contract</dt><dd>{usdCents(ECON.netCents)} ({pct(ECON.marginBps)})</dd></div>
+      <div><dt>Total spend, derived by the contract</dt><dd>{usdCents(ECON.spendCents)}</dd></div>
+    </dl>
+  </section>
+
+  <section class="card" aria-labelledby="mr-h">
+    <h2 id="mr-h">Model and timing <Provenance kind="snapshot" note="one run" /></h2>
+    <dl class="dk-facts">
+      <div><dt>Model</dt><dd class="mono">AI Agent</dd></div>
+      <div><dt>Time to answer</dt><dd>{latencyMs !== null ? fmtS(latencyMs) : 'n/a'}</dd></div>
+      <div><dt>Whole run, start to finish</dt><dd>{fmtS(RUN.meta.durationMs)}</dd></div>
+      <div><dt>Run at</dt><dd>{startedAt}</dd></div>
+      <div><dt>Transactions</dt><dd>{TXS.length} sent: {okTxs} succeeded, {failTxs} reverted on purpose</dd></div>
+    </dl>
+    <p class="note">The model ran once, offline, on the developer&rsquo;s machine. Its answer is stored with the run.</p>
+  </section>
+</AgentDesk>
+
+<section aria-labelledby="cc-h" class="stack">
+  <h2 id="cc-h" style="font-size:var(--fs-xl)">What the agent can and cannot do</h2>
+  <div class="dk-cc">
+    <div class="card can">
+      <h3>Can</h3>
+      <ul>
+        <li><i aria-hidden="true">✓</i><span><b>Propose a trade.</b> It reads the offers and names one buy and one sell. It never touches money while proposing.</span></li>
+        <li><i aria-hidden="true">✓</i><span><b>Commit, but only inside the mandate.</b> <code>commitOpportunity</code> succeeds only when the contract&rsquo;s own numbers pass every check.
+          {commitTx && <span class="ev"><a href={explorer.tx(commitTx.tx.hash)} target="_blank" rel="noopener noreferrer">commit {short(commitTx.tx.hash, 8, 6)} ↗<span class="sr-only"> (opens the block explorer in a new tab)</span></a></span>}</span></li>
+        <li><i aria-hidden="true">✓</i><span><b>Pay allowlisted payees.</b> Escrow can be released to the supplier the owner approved.
+          {payTx && <span class="ev"><a href={explorer.tx(payTx.tx.hash)} target="_blank" rel="noopener noreferrer">payment {short(payTx.tx.hash, 8, 6)} ↗<span class="sr-only"> (opens the block explorer in a new tab)</span></a></span>}</span></li>
+        <li><i aria-hidden="true">!</i><span><b>Attest real-world steps.</b> Received, listed and sold are the agent&rsquo;s word: the contract cannot see a warehouse. This is a stated limit of this version.</span></li>
+      </ul>
+    </div>
+    <div class="card cannot">
+      <h3>Cannot</h3>
+      <ul>
+        <li><i aria-hidden="true">✕</i><span><b>Exceed the caps.</b> Error <code>SpendCap</code>{attack('SpendCap') ? <>: triggered, <span class="why">{attack('SpendCap')!.sentence}</span></> : ''}
+          <span class="why">The daily cap (<code>DailyCap</code>) is proven by the Foundry test <code>{guard('DailyCap')?.test}</code>{guard('DailyCap')?.demonstrated ? '' : ', not shown in this run'}.</span></span></li>
+        <li><i aria-hidden="true">✕</i><span><b>Misreport the profit.</b> Error <code>MathMismatch</code>{attack('MathMismatch') ? <>: triggered, <span class="why">{attack('MathMismatch')!.sentence}</span></> : ''}
+          {FAILED_TX && <span class="ev"><a href={explorer.tx(FAILED_TX.tx.hash)} target="_blank" rel="noopener noreferrer">reverted tx {short(FAILED_TX.tx.hash, 8, 6)} ↗<span class="sr-only"> (opens the block explorer in a new tab)</span></a></span>}</span></li>
+        <li><i aria-hidden="true">✕</i><span><b>Pay itself.</b> Error <code>PayeeNotAllowed</code>{attack('PayeeNotAllowed') ? <>: triggered, <span class="why">{attack('PayeeNotAllowed')!.sentence}</span></> : ''}</span></li>
+        <li><i aria-hidden="true">✕</i><span><b>Reuse an old or swapped quote.</b> Errors <code>Stale</code>, <code>Replay</code> and <code>BadQuoteHash</code> were each triggered in the run.</span></li>
+        <li><i aria-hidden="true">✕</i><span><b>Act when paused.</b> Error <code>Paused</code>: the owner can stop every agent action at once. Proven by the Foundry test <code>{guard('Paused')?.test}</code>{guard('Paused')?.demonstrated ? '' : '; not shown in this run'}.</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<div class="dk-next">
+  <a class="btn" href="/show/">Walk through the run</a>
+  <a class="btn ghost" href="/app/policies/">See every guardrail</a>
+  <a class="btn ghost" href="/app/transactions/">Open the transactions</a>
+</div>
+</Shell></Base>

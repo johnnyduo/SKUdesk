@@ -1,0 +1,8 @@
+---
+import Base from '../layouts/Base.astro';
+import Terminal from '../components/market/Terminal.tsx';
+---
+<Base title="Market | SKUdesk">
+<Fragment slot="head"><meta name="description" content="SKUdesk market: prices discovered by sealed-bid batch auctions on Robinhood Chain Testnet. Test units, not retail prices. Bots provide liquidity. Testnet, test token."/></Fragment>
+<Terminal client:load />
+</Base>

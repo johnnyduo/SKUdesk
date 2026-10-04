@@ -1,0 +1,7 @@
+---
+import { IMAGES } from './images';
+const { src = IMAGES.hero, alt = 'Product', size = 56, ring = false } = Astro.props;
+---
+<span class:list={['thumb', { ring, lg: size >= 88 }]} style={`width:${size}px;height:${size}px`}>
+<img src={src} alt={alt} width={size} height={size} loading="lazy" decoding="async"/>
+</span>

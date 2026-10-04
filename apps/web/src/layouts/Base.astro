@@ -1,0 +1,19 @@
+---
+import '../styles/global.css';
+import { unescapeAttr } from '../lib/html-text.ts';
+const SITE = 'https://skudesk.lol';
+const DEFAULT_DESCRIPTION = 'Agents compete on the same product in sealed rounds. Each finds the lowest total cost from identical offers; one price clears on-chain. Built on Robinhood Chain.';
+const { title = 'SKUdesk', description = DEFAULT_DESCRIPTION, image = '/og.png', canonicalPath, noindex = false } = Astro.props;
+const abs = (p: string) => (/^https?:\/\//.test(p) ? p : SITE + (p.startsWith('/') ? p : '/' + p));
+// Every page gets a canonical URL with a trailing slash (the form the static host serves), unless a page passes its own path.
+const path = canonicalPath ?? Astro.url.pathname;
+const canonical = abs(path.endsWith('/') || /\.[a-z0-9]+$/i.test(path) ? path : path + '/');
+const img = abs(image);
+// A page may still put its own <meta name="description"> in the head slot (market does). Then ours is dropped, and the share text reuses that one.
+const headSlot = Astro.slots.has('head') ? await Astro.slots.render('head') : '';
+// The slot HTML is already escaped, and the tags below escape their value again, so unescape it first.
+const slotDescRaw = headSlot.match(/<meta\b[^>]*\bname="description"[^>]*\bcontent="([^"]*)"/)?.[1];
+const slotDesc = slotDescRaw === undefined ? undefined : unescapeAttr(slotDescRaw);
+const shareDesc = slotDesc ?? description;
+---
+<html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><meta name="theme-color" content="#080908"/><meta name="google-site-verification" content="2Mm5OedqupMMGU177lAJ-geojDmE5iPnoxDO8UBX5uI"/><meta name="google-site-verification" content="2k9QAd73qjpTRRcUnBsw4qY5WX4I9VEY-p2f7RzceCg"/>{slotDesc === undefined && <meta name="description" content={description}/>}<title>{title}</title>{noindex ? <meta name="robots" content="noindex"/> : <link rel="canonical" href={canonical}/>}<meta property="og:title" content={title}/><meta property="og:description" content={shareDesc}/><meta property="og:type" content="website"/>{!noindex && <meta property="og:url" content={canonical}/>}<meta property="og:site_name" content="SKUdesk"/><meta property="og:image" content={img}/><meta property="og:image:width" content="1200"/><meta property="og:image:height" content="630"/><meta name="twitter:card" content="summary_large_image"/><meta name="twitter:title" content={title}/><meta name="twitter:description" content={shareDesc}/><meta name="twitter:image" content={img}/><link rel="preload" href="/fonts/instrument-serif.woff2" as="font" type="font/woff2" crossorigin/><link rel="preload" href="/fonts/inter.woff2" as="font" type="font/woff2" crossorigin/><link rel="preload" href="/fonts/jetbrains-mono.woff2" as="font" type="font/woff2" crossorigin/><slot name="head"/><link rel="icon" href="/favicon.svg" type="image/svg+xml"/><link rel="apple-touch-icon" href="/apple-touch-icon.png"/></head><body><a class="skip" href="#main">Skip to content</a><slot/></body></html>

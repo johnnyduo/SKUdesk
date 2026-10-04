@@ -1,0 +1,111 @@
+---
+import Base from '../../layouts/Base.astro';
+import Shell from '../../components/shell/Shell.astro';
+import PageHead from '../../components/shell/PageHead.astro';
+import '../../components/guard/guard.css';
+import { DEPLOYMENT as D, RUN, CHAIN, explorer, usdBase, usdCents } from '../../lib/run';
+import Provenance from '../../components/ui/Provenance.astro';
+import { AGENTS as A } from '../../lib/agents-abi';
+import BB from '../../data/blindbook.json';
+import ORD from '../../data/orders.json';
+
+const blockUrl = CHAIN.explorer ? `${CHAIN.explorer}/block/${D.deployBlock}` : '';
+const P = RUN.policy;
+const contracts = [
+  { name: 'SKUdeskCore', file: 'packages/contracts/src/SKUdeskCore.sol', addr: D.core, role: 'The vault and rulebook. It holds the money, stores the owner’s mandate, re-derives the agent’s economics, derives the spend itself, and moves each lot through a fixed set of states. This is the contract every page on this site reads.', args: [['_token', D.token, 'The settlement token the vault holds (the test USDG here).'], ['_agent', D.agent, 'The only address allowed to act as the agent.']], note: `Constructor also sets the starting mandate: ${usdCents(P.maxExec)} per trade, ${usdCents(P.dailySpendCap)} new commitments per UTC day, ${Number(P.minMarginBps) / 100}% margin floor, ${P.quoteTTL}s quote freshness. The deployer becomes the owner.` },
+  { name: 'Test USDG (mUSDG)', file: 'packages/contracts/src/MockUSDC.sol', addr: D.token, role: 'A testnet stand-in token with 6 decimals and an owner-only mint. It exists because the real testnet USDG cannot be minted publicly. It is not USDG and not real USDC; it has no value.', args: [], note: 'No constructor arguments. The deployer becomes the token owner.' },
+  { block: A.deployBlock, name: 'AgentFactory', file: 'packages/contracts/src/AgentFactory.sol', addr: A.factory, role: 'Creates a user’s agent in one transaction: a MandateVault owned by the caller, a locked ERC-4337 account that is the vault’s only agent, and an identity token. Used by the Deploy agent page.', args: [['_token', A.token, 'The settlement token (the test USDG).'], ['_entryPoint', A.entryPoint, 'The canonical ERC-4337 v0.7 EntryPoint already deployed on this chain.'], ['_registry', A.registry, 'The ERC-8004 Identity Registry already deployed on this chain. It is a shared contract run by someone else; its implementation source is not verified.']], note: 'Each agent is registered in that ERC-8004 registry and the token is handed to its owner. The vault and account it creates are separate contracts (MandateVault and AgentAccount); their addresses are in the AgentCreated event and on the Deploy your agent page.' },
+  { block: A.deployBlock, name: 'TokenFaucet', file: 'packages/contracts/src/TokenFaucet.sol', addr: A.faucet, role: 'Gives each wallet 1,000 test mUSDG once a day so a visitor can fund their own vault. Test money only.', args: [['_token', A.token, 'The test USDG.'], ['_amount', '1000000000', '1,000 mUSDG in base units.'], ['_cooldown', '86400', 'One day, in seconds.']], note: 'Pre-funded with 500,000 mUSDG by the token owner.' },
+  { block: BB.deployBlock, name: 'BlindBook', file: 'packages/contracts/src/BlindBook.sol', addr: BB.book, role: 'The sealed-bid market on the Agent market page. Traders commit a hidden order, reveal it, and each round the contract clears everything at one price. The traded units are test units issued by the market owner, not real stock.', args: [['_token', BB.token, 'The settlement token (mUSDG).'], ['_epochLen', String(BB.epochLen), 'Seconds per round.'], ['_commitEnd', String(BB.commitEnd), 'Orders are hidden until this second of the round.'], ['_revealEnd', String(BB.revealEnd), 'Orders are revealed until this second; the contract clears after it.'], ['_bond', String(BB.bond), 'Bond per order in base units (2.00 mUSDG), forfeited if the order is never revealed.']], note: 'The deployer becomes the market owner: it lists markets, issues the test units and can pause.' },
+  ...(ORD.deployed ? [{ block: (ORD as any).deployBlock, name: 'OrderEscrow', file: 'packages/contracts/src/OrderEscrow.sol', addr: (ORD as any).escrow, role: 'Holds a buyer’s payment for one product until a named verifier confirms delivery, with a bond from the seller. Shown on the Orders tab. One address chosen at deployment decides whether goods arrived.', args: [['_token', (ORD as any).token, 'mUSDG.'], ['_book', (ORD as any).book, 'The BlindBook it reads cleared rounds from.'], ['_verifier', (ORD as any).verifier, 'The one address that confirms delivery. Trusted.']], note: 'Also fixes the product id, the 20% seller bond and the time limits at deployment.' }] : []),
+];
+const roles = [
+  { h: 'Owner', a: D.owner, p: 'Deployed the contracts, funded the vault, and is the only address that can change the mandate, allowlist payees and payers, pause the agent, or withdraw free funds. The owner can act as the agent only by replacing it with setAgent, which is on chain.' },
+  { h: 'Agent', a: D.agent, p: 'The AI agent’s public address. It can commit opportunities and move lots through their states within the mandate. It cannot change the mandate, and it cannot pay itself: escrow only goes to allowlisted payees.' },
+  { h: 'Supplier', a: D.supplier, p: 'The allowlisted payee: the only kind of address escrow can be released to. A fixed test address standing in for a real supplier.' },
+  { h: 'Payer', a: D.payer, p: 'The allowlisted payer that settlement pulls proceeds from. On testnet it is the deployer wallet, standing in for a marketplace payout.' },
+];
+const cmds = [
+  { t: 'Run the contract tests', c: 'cd packages/contracts && forge test', n: 'Foundry unit, fuzz and invariant tests. No network or keys needed.' },
+  { t: 'Run the TypeScript tests', c: 'node --test packages/economics/test/*.test.ts packages/matching/test/*.test.ts', n: 'Economics (integer cents) and identity gates, from the repository root.' },
+  { t: 'Deploy to Robinhood Chain Testnet', c: 'cd packages/contracts && forge script script/Deploy.s.sol --rpc-url $ROBINHOOD_RPC --broadcast', n: 'Needs DEPLOYER_PRIVATE_KEY and AGENT_ADDRESS in the environment and a wallet funded with testnet ETH. Writes packages/contracts/deployments/46630.json.' },
+  { t: 'Run the agent and record a run', c: 'cd apps/web && node --env-file=../../.env tools/run-agent.ts', n: 'Needs the model API key, AGENT_PRIVATE_KEY and ROBINHOOD_RPC in .env. Calls the language model, sends the transactions and writes src/data/run.json.' },
+];
+const ex = (a: string) => explorer.address(a);
+const isAddr = (v: string) => /^0x[0-9a-fA-F]{40}$/.test(v);
+---
+<Base title="Contracts | SKUdesk" description="The smart contracts behind every number on SKUdesk, deployed on Robinhood Chain Testnet, with their addresses, roles and explorer links."><Shell>
+<PageHead title="Contracts" sub={`The contracts behind every number on this site, deployed on ${CHAIN.name}.`}/>
+
+<section class="gd-intro" aria-labelledby="wyla">
+  <h2 id="wyla">What you are looking at</h2>
+  <p>Smart contracts, small programs that live on a blockchain, and the wallets that play each role. The vault (SKUdeskCore) enforces the owner’s mandate. At the end of the run it held {usdBase(RUN.end.free)} of testnet money <Provenance kind="snapshot" note="end of run" />. Every address below is real and opens on the block explorer, where you can read the verified source code.</p>
+  <p class="gd-gloss">An address is an account on the chain. Source verified means the explorer compiled the published source and confirmed it produces exactly the code that is deployed. Deployed at block {D.deployBlock.toLocaleString('en-US')}. <b>Contracts are not audited.</b> They are testnet prototypes; use test money only.</p>
+</section>
+
+<section class="gd-section" aria-labelledby="c-h">
+  <h2 id="c-h">Deployed contracts <small>chain id {D.chainId}</small> <Provenance kind="onchain" note="addresses open on the explorer" /></h2>
+  <div class="gd-cards">
+    {contracts.map((c) => (
+      <article class="card gd-contract">
+        <h3>{c.name}</h3>
+        <p class="gd-lede">{c.role}</p>
+        <div class="gd-addr">{c.addr}</div>
+        <div class="row">
+          <a class="btn ghost" href={ex(c.addr)} target="_blank" rel="noopener noreferrer">Open on explorer ↗<span class="sr-only"> (new tab)</span></a>
+          <a class="btn ghost" href={explorer.code(c.addr)} target="_blank" rel="noopener noreferrer">Source verified ↗<span class="sr-only"> (new tab)</span></a>
+        </div>
+        <dl class="gd-kv">
+          <div><dt>Source file</dt><dd class="mono">{c.file}</dd></div>
+          <div><dt>Deploy block</dt><dd class="mono">{CHAIN.explorer ? <a class="gd-link" href={`${CHAIN.explorer}/block/${c.block ?? D.deployBlock}`} target="_blank" rel="noopener noreferrer">{Number(c.block ?? D.deployBlock).toLocaleString('en-US')}</a> : (c.block ?? D.deployBlock)}</dd></div>
+          <div><dt>Constructor</dt><dd>{c.args.length ? (
+            <ul style="margin:0;padding:0;list-style:none;display:grid;gap:8px">{c.args.map(([n, v, w]) => <li><span class="mono">{n}</span> = {isAddr(v) ? <a class="gd-link mono" href={ex(v)} target="_blank" rel="noopener noreferrer">{v}</a> : <span class="mono">{v}</span>}<span class="muted" style="display:block">{w}</span></li>)}</ul>
+          ) : 'none'}</dd></div>
+        </dl>
+        <p class="gd-note">{c.note}</p>
+      </article>
+    ))}
+  </div>
+</section>
+
+<section class="card gd-section" aria-labelledby="r-h">
+  <h2 id="r-h">Who plays each role</h2>
+  <p class="gd-lede">Four addresses. The contract only ever pays escrow to the supplier and only ever pulls settlement from the payer, because the owner put exactly those two on allowlists.</p>
+  <div class="gd-roles">
+    {roles.map((r) => (
+      <div class="gd-role">
+        <h3>{r.h}</h3>
+        <div>
+          <p>{r.p}</p>
+          <div class="gd-addr"><a class="gd-link" href={ex(r.a)} target="_blank" rel="noopener noreferrer">{r.a}</a></div>
+        </div>
+      </div>
+    ))}
+  </div>
+</section>
+
+<section class="gd-section" aria-labelledby="s-h">
+  <h2 id="s-h">What the deploy script does</h2>
+  <p class="gd-lede">One script (<span class="mono">script/Deploy.s.sol</span>) creates both contracts and prepares the vault, in this order: deploy the test USDG token; deploy SKUdeskCore with the token and the agent address; mint 10,000.00 mUSDG to the deployer; approve the vault; deposit 5,000.00 mUSDG into the vault; allowlist the supplier as a payee; allowlist the deployer as a payer. The other 5,000.00 mUSDG stays with the payer wallet as the float that settlement later pulls from.</p>
+</section>
+
+<section class="gd-section" aria-labelledby="re-h">
+  <h2 id="re-h">Reproduce it yourself</h2>
+  <p class="gd-lede">These are the commands from the repository README. The first two need nothing but the code; the last two need your own testnet wallets and a model API key, and never run in your browser.</p>
+  {cmds.map((k) => (
+    <div class="gd-cmd-wrap">
+      <h3>{k.t}</h3>
+      <div class="gd-cmd" tabindex="0" role="group" aria-label={k.t}><code>{k.c}</code><button type="button" class="gd-copy" data-copy={k.c}>Copy</button></div>
+      <p>{k.n}</p>
+    </div>
+  ))}
+</section>
+<script>
+  document.querySelectorAll<HTMLButtonElement>('.gd-copy').forEach((b) => {
+    b.addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(b.dataset.copy || ''); b.textContent = 'Copied'; } catch { b.textContent = 'Select and copy'; }
+      setTimeout(() => (b.textContent = 'Copy'), 1600);
+    });
+  });
+</script>
+</Shell></Base>

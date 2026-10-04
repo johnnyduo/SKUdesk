@@ -1,0 +1,15 @@
+---
+import Base from '../../layouts/Base.astro';
+import Shell from '../../components/shell/Shell.astro';
+import PageHead from '../../components/shell/PageHead.astro';
+import Explain from '../../components/shell/Explain.astro';
+import CreateAgent from '../../components/wallet/CreateAgent.tsx';
+import { CHAIN } from '../../lib/run';
+---
+<Base title="Deploy your agent | SKUdesk" description="Connect a wallet, set a budget, and create an agent account that cannot spend past it. Runs on Robinhood Chain Testnet with test tokens that have no value."><Shell>
+<PageHead title="Deploy your agent" sub="Connect a wallet, set a budget, and create an agent account that cannot spend past it."/>
+<Explain>
+Your agent account gets three things from one transaction. A <b>vault</b> that holds its money and enforces your limits. A <b>locked smart account</b> (ERC-4337) that is the only thing the vault listens to, and that can call nothing except that vault. And an <b>identity token</b> (ERC-8004 style) that names the agent on chain. You own all three, and you can pause it at any time. Creating it does not start any trading: no agent software is attached. Everything runs on {CHAIN.name} with a test token that has no real value.
+</Explain>
+<CreateAgent client:load />
+</Shell></Base>

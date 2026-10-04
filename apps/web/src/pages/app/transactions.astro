@@ -1,0 +1,93 @@
+---
+import Base from '../../layouts/Base.astro';
+import Shell from '../../components/shell/Shell.astro';
+import PageHead from '../../components/shell/PageHead.astro';
+import Explain from '../../components/shell/Explain.astro';
+import Provenance from '../../components/ui/Provenance.astro';
+import { RUN, TXS, ECON, FAILED_TX, CHAIN, usdBase, short, explorer } from '../../lib/run';
+
+const PLAIN: Record<string, string> = {
+  commitOpportunity: 'The agent proposes the deal; the contract re-derives the economics and accepts',
+  mintLot: 'A lot is created from the committed deal',
+  fundLot: 'Exactly the committed spend moves from the vault into the lot\'s escrow',
+  markPurchased: 'Escrow is paid to the owner-approved supplier',
+  markReceived: 'The agent reports the goods arrived',
+  markListed: 'The agent reports the goods are listed for sale',
+  markSold: 'The agent reports the goods sold',
+  settle: 'Sale proceeds are pulled from the approved payer and profit is measured',
+};
+const fnOf = (title: string) => title.match(/^[A-Za-z]\w*/)?.[0] ?? '';
+// The failed tx's title says it is the inflated-profit commit; its revert reason is the matching recorded attack.
+const failedAttack = RUN.attacks.find((a) => a.error === 'MathMismatch' && /inflat/i.test(FAILED_TX?.title ?? ''));
+
+// Running vault balance after each step, derived only from events: start balance (first event), spend (ECON), proceeds (RUN.end).
+const start = BigInt(RUN.events.find((e) => e.kind === 'policy')?.data?.vaultFree ?? 0);
+const spend = BigInt(ECON.spendCents) * 10_000n;
+const proceeds = BigInt(RUN.end.totalProceeds);
+let free = start, esc = 0n, paid = 0n;
+const rows = TXS.map((e) => {
+  const fn = e.tx.status === 'reverted' ? 'commitOpportunity' : fnOf(e.title);
+  if (e.tx.status === 'success') {
+    if (fn === 'fundLot') { free -= spend; esc += spend; }
+    else if (fn === 'markPurchased') { esc -= spend; paid += spend; }
+    else if (fn === 'settle') { free += proceeds; }
+  }
+  return { e, fn, free, esc, paid };
+});
+const endOk = free === BigInt(RUN.end.free) && esc === BigInt(RUN.end.totalEscrow) && paid === BigInt(RUN.end.totalPaidOut);
+
+const ok = TXS.filter((t) => t.tx.status === 'success').length;
+const bad = TXS.length - ok;
+const gas = TXS.reduce((s, t) => s + Number(t.tx.gasUsed), 0);
+const nf = (n: number | string) => Number(n).toLocaleString('en-US');
+const failedRow = rows.findIndex((r) => r.e.tx.status === 'reverted') + 1;
+---
+<Base title="Transactions | SKUdesk" description="The ledger of the run on Robinhood Chain Testnet: every transaction, in order, with a link to the block explorer."><Shell>
+<PageHead title="Transactions" sub={`The real ledger of the run on ${CHAIN.name}.`}/>
+
+<Explain>
+Every row is a transaction that was really mined on {CHAIN.name}; click the hash to open it on the block explorer. <b>Gas</b> is the unit of computation a transaction used. One transaction failed on purpose: a <b>revert</b> means the contract refused it and undid everything it tried to do.
+</Explain>
+
+<div class="metricbar tabnum ov-m4"><div><small>Transactions</small><b>{TXS.length}</b></div><div><small>Succeeded</small><b class="neon">{ok}</b></div><div><small>Reverted</small><b class="red">{bad}</b></div><div><small>Total gas used</small><b>{nf(gas)}</b></div></div>
+
+<section class="card" aria-labelledby="ledger-h">
+<h2 id="ledger-h">Ledger <Provenance kind="onchain" note="saved from the run" /></h2>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Transaction ledger, scrollable">
+<table class="ov-ledger">
+<thead><tr><th scope="col">#</th><th scope="col">Step</th><th scope="col">Function</th><th scope="col" class="num">Block</th><th scope="col" class="num">Gas used</th><th scope="col">Status</th>{endOk && <th scope="col" class="num">Vault after: free / escrow / paid</th>}<th scope="col">Explorer</th></tr></thead>
+<tbody>
+{rows.map(({ e, fn, free, esc, paid }, i) => {
+  const reverted = e.tx.status === 'reverted';
+  return (
+  <tr class:list={{ failed: reverted }}>
+    <td class="mono muted c-n" data-l="Step no.">{i + 1}</td>
+    <td class="c-step"><div class="ov-step">
+      <span>{reverted ? 'The inflated-profit commit, sent with a forced gas limit so the refusal is visible on chain' : (PLAIN[fn] ?? e.title)}</span>
+      <small class="muted">{e.detail}</small>
+      {reverted && failedAttack && <small class="red"><b>{failedAttack.error}</b>: {failedAttack.sentence}</small>}
+    </div></td>
+    <td class="mono c-fn" data-l="Function">{fn}</td>
+    <td class="mono num" data-l="Block">{nf(e.tx.block)}</td>
+    <td class="mono num" data-l="Gas used">{nf(e.tx.gasUsed)}</td>
+    <td data-l="Status">{reverted ? <span class="pill bad"><span aria-hidden="true">✕ </span>reverted</span> : <span class="pill good"><span aria-hidden="true">✓ </span>success</span>}</td>
+    {endOk && <td class="mono num ov-bal" data-l="Vault after (free / escrow / paid)">{usdBase(free)} / {usdBase(esc)} / {usdBase(paid)}</td>}
+    <td data-l="Explorer"><a class="ov-tx mono" href={explorer.tx(e.tx.hash)} target="_blank" rel="noopener noreferrer" title={e.tx.hash}>{short(e.tx.hash, 8, 6)} ↗<span class="sr-only"> (opens the block explorer in a new tab)</span></a></td>
+  </tr>);
+})}
+</tbody>
+</table>
+</div>
+{endOk && <p class="ov-gl">The vault columns are derived from the steps: the vault started with {usdBase(start)} free, <code>fundLot</code> moves the spend into escrow, <code>markPurchased</code> moves it out to the supplier, <code>settle</code> adds the proceeds. The last row equals the vault state at the end of the run.</p>}
+</section>
+
+<section class="card" aria-labelledby="refused-h">
+<h2 id="refused-h">Refused attempts <Provenance kind="snapshot" note="read-only calls" /></h2>
+<p class="ov-gl">The RPC will not broadcast a transaction that is certain to fail, so these attempts were checked with a read-only call (an <code>eth_call</code> dry run) made as the agent's own address against the deployed contract. The contract answered with the refusal below; nothing was mined for them, so no gas was spent and there is no hash. Only the inflated-profit attempt was additionally sent as a real transaction.</p>
+<ul class="ov-refused">
+{RUN.attacks.map((a) => (
+<li><div class="row"><b>{a.name}</b><span class="pill bad mono">{a.error}</span>{a === failedAttack && <span class="pill">also sent as a real transaction: ledger row {failedRow}</span>}</div><p>{a.sentence}</p></li>
+))}
+</ul>
+</section>
+</Shell></Base>

@@ -1,0 +1,1 @@
+{"error":{"code":400,"message":"[productAttributes.price] Invalid price: the value must be greater than zero. This message is intentionally long to verify trimming: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","status":"INVALID_ARGUMENT"}}

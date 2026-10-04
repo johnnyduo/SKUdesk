@@ -1,0 +1,121 @@
+---
+import Base from '../../../layouts/Base.astro';
+import Shell from '../../../components/shell/Shell.astro';
+import PageHead from '../../../components/shell/PageHead.astro';
+import Ladder from '../../../components/commerce/Ladder.tsx';
+import PriceCompare from '../../../components/commerce/PriceCompare.tsx';
+import Provenance from '../../../components/ui/Provenance.astro';
+import '../../../components/commerce/market.css';
+import { RUN, SNAPSHOT, ECON, GATES, usdCents, pct, short, explorer } from '../../../lib/run';
+import { OPP_SLUG, QUOTE_FIELDS, QUOTE_HASH, QUOTE_HASH_OK, QUOTE_HASH_SEEN_ON_CHAIN, PRODUCT_HASH, PRODUCT_ID, SNAPSHOT_HASH_OK, SNAPSHOT_HASH_RECOMPUTED, OPP_HASH_OK, OPP_HASH_RECOMPUTED, COMMIT_TX, MINT_TX, FUND_TX, BUY_ROW, SELL_ROW, GATE_GLOSS, glossProof, proofValue, PRODUCT_NAME, fmtCaptured } from '../../../components/commerce/market';
+export function getStaticPaths() {
+  // The only real opportunity is the one the run committed. Its id is the first 8 hex digits of its on-chain oppHash.
+  return [{ params: { id: OPP_SLUG } }];
+}
+const gateLabel: Record<string, string> = { brand: 'brand', compatibility: 'model', packCount: 'pack', magsafe: 'magsafe', gtin: 'gtin', color: 'color' };
+const legs = [
+  { side: 'Buy', row: BUY_ROW, ev: GATES.find((g) => g.data.offerId === BUY_ROW.id) },
+  { side: 'Sell', row: SELL_ROW, ev: GATES.find((g) => g.data.offerId === SELL_ROW.id) },
+];
+const fmtField = (f: { value: bigint; unit: string }) => (f.unit === 'bps' ? `${f.value} bps (${pct(Number(f.value))})` : `${f.value}¢ (${usdCents(Number(f.value))})`);
+const txs = [
+  { fn: 'commitOpportunity', t: COMMIT_TX, note: 'contract re-derived the economics and stored the opportunity' },
+  { fn: 'mintLot', t: MINT_TX, note: `lot #${RUN.meta.lot} created from this opportunity, once only` },
+  { fn: 'fundLot', t: FUND_TX, note: `exactly ${usdCents(ECON.spendCents)} moved from the vault into the lot’s escrow` },
+];
+---
+<Base title={`Opportunity ${OPP_SLUG} | SKUdesk`} description={`Opportunity ${OPP_SLUG}: ${PRODUCT_NAME}, ${ECON.units} units, committed on-chain. The price gap, the identity checks and the transactions behind it.`}><Shell>
+<PageHead title={`Opportunity ${OPP_SLUG}`} mono sub={`${PRODUCT_NAME} · ${ECON.units} units · committed on-chain`}/>
+<p class="row"><a class="mk-link tap" href="/app/opportunities/">← All opportunities</a></p>
+
+<section class="mk-what" aria-labelledby="what-h">
+  <h2 id="what-h">What you are looking at</h2>
+  <p>The complete evidence file for the one trade the agent committed. It shows the 11 numbers that make up the quote, how the <span class="mk-gloss" title="Hash: a short fingerprint of data. Change one character and it changes completely.">fingerprints</span> that identify this trade are built from them (re-computed here, not copied), the identity-gate evidence for both listings, and the three on-chain transactions that followed.</p>
+</section>
+
+<div class="mk-two">
+  <section class="card" aria-labelledby="q-h">
+    <h2 id="q-h" class="mk-h">The quote the contract received</h2>
+    <p class="mk-sub"><Provenance kind="snapshot" note={fmtCaptured(SNAPSHOT.capturedAt)} /> Eleven whole numbers. The agent sends them with a hash of the same eleven; if the contract hashes them and gets a different value, it refuses. Offer prices come from the market snapshot and are shown before tax and fees; the rest are fixed per-unit assumptions in the run script, so the landed cost is a computed figure, not a quote from a seller. These are test listings: no real stock or delivery is implied.</p>
+    <dl class="mk-kv">
+      {QUOTE_FIELDS.map((f) => (
+        <div><dt>{f.label}</dt><dd>{fmtField(f)}</dd><dd class="mk-src">{f.from}</dd></div>
+      ))}
+    </dl>
+  </section>
+
+  <section class="card" aria-labelledby="h-h">
+    <h2 id="h-h" class="mk-h">Fingerprints, re-computed</h2>
+    <p class="mk-sub">Calculated again when this page was built, from the same files the run wrote. The contract derives the opportunity id itself, so the agent cannot choose it or reuse an old one.</p>
+    <div class="mk-hash">
+      <span class="muted">productHash = keccak256("{PRODUCT_ID}")</span><code>{PRODUCT_HASH}</code>
+      <span class="muted">quoteHash = keccak256 of the 11 numbers above</span><code>{QUOTE_HASH}</code>
+      {QUOTE_HASH_OK === true && <span class="mk-ok">✓ equals the hash the contract reported as expected when the run tried a swapped quote ({short(QUOTE_HASH_SEEN_ON_CHAIN ?? '', 8, 6)})</span>}
+      {QUOTE_HASH_OK === false && <span class="mk-bad">✕ differs from the hash the contract reported during the run</span>}
+      <span class="muted">snapshotHash = keccak256 of data/snapshot.json <Provenance kind="agent" note="the agent supplies it" /></span><code>{SNAPSHOT_HASH_RECOMPUTED}</code>
+      {SNAPSHOT_HASH_OK ? <span class="mk-ok">✓ matches the snapshotHash committed on-chain</span> : <span class="mk-bad">✕ does not match the committed snapshotHash</span>}
+      <span class="muted">oppHash = keccak256(productHash, quoteHash, snapshotHash)</span><code>{OPP_HASH_RECOMPUTED}</code>
+      {OPP_HASH_OK ? <span class="mk-ok">✓ matches the opportunity id on-chain</span> : <span class="mk-bad">✕ does not match the on-chain opportunity id</span>}
+    </div>
+  </section>
+</div>
+
+<section class="card" aria-labelledby="g-h">
+  <h2 id="g-h" class="mk-h">Identity-gate evidence for both listings <Provenance kind="snapshot" /></h2>
+  <p class="mk-sub">From the run, before anything touched the chain. Each line is expected versus observed. “Informational” gates (brand, and a barcode when a listing has none) cannot reject on their own.</p>
+  <div class="mk-two">
+    {legs.map((l) => (
+      <div class="panel">
+        <h3 class="mk-h">{l.side}: {l.row.id} <span class="mk-chip locked">LOCKED</span></h3>
+        <div class="mono xs muted">{l.row.title}</div>
+        <ul class="mk-gates">
+          {(l.ev?.data.gates ?? []).map((g: any) => (
+            <li>
+              <span class:list={['m', g.pass ? 'ok' : 'bad']}>{g.pass ? '✓' : '✕'}</span>
+              <span><b>{gateLabel[g.gate] ?? g.gate}</b>{!g.hard && <span class="muted xs"> informational</span>}</span>
+              <span class="v" title={GATE_GLOSS[g.gate]}>{g.gate === 'brand' ? 'brand aliases are normalised' : `expected ${g.expected}, observed ${g.observed}`}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    ))}
+  </div>
+</section>
+
+<section class="card" aria-labelledby="m-h">
+  <h2 id="m-h" class="mk-h">Unit economics as the contract re-derived them</h2>
+  <ul class="mk-proof">
+    {ECON.proof.map((l) => (
+      <li><span class="lbl">{l.label}</span><span class="fx">{l.formula}</span><span class="res">{proofValue(l.label, l.resultCents)}</span><span class="gl">{glossProof(l.label)}</span></li>
+    ))}
+  </ul>
+  <p class="mk-sub">Total derived spend: {ECON.landedCents}¢ landed × {ECON.units} units = <b>{usdCents(ECON.spendCents)}</b>, against a per-trade cap of {usdCents(RUN.policy.maxExec)}. The agent never supplies this figure.</p>
+</section>
+
+<section class="card" aria-labelledby="t-h">
+  <h2 id="t-h" class="mk-h">Transactions that followed <Provenance kind="onchain" note="saved from the run" /></h2>
+  <ul class="mk-txs">
+    {txs.map((x) => (
+      <li>
+        <span class="fn">{x.fn}</span>
+        <span>{x.note}</span>
+        <span class="mt">block {x.t.tx.block} · gas {Number(x.t.tx.gasUsed).toLocaleString('en-US')} · {x.t.tx.status}</span>
+        <a class="mk-link tap mono" href={explorer.tx(x.t.tx.hash)} target="_blank" rel="noopener noreferrer">{short(x.t.tx.hash, 8, 6)}</a>
+      </li>
+    ))}
+  </ul>
+  <div class="mk-next">
+    <a class="btn" href={`/app/lots/${RUN.meta.lot}/`}>Follow lot #{RUN.meta.lot}</a>
+    <a class="btn ghost" href="/app/radar/">The market it came from</a>
+  </div>
+</section>
+
+<section class="card" aria-labelledby="l-h">
+  <h2 id="l-h" class="mk-h">Where this trade sat in the market</h2>
+  <Ladder />
+</section>
+<section class="card" aria-labelledby="pc-h">
+<h2 id="pc-h">Live price sources for this SKU <span class="pill blue">/api</span></h2>
+<PriceCompare client:visible sku={PRODUCT_ID}/>
+</section>
+</Shell></Base>

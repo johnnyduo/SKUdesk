@@ -1,0 +1,95 @@
+---
+import Base from '../../../layouts/Base.astro';
+import Shell from '../../../components/shell/Shell.astro';
+import PageHead from '../../../components/shell/PageHead.astro';
+import Tape from '../../../components/terminal/Tape.tsx';
+import Provenance from '../../../components/ui/Provenance.astro';
+import '../../../components/commerce/market.css';
+import { RUN, SNAPSHOT, ECON, VERIFIED_NET_CENTS, usdCents, pct, short, explorer } from '../../../lib/run';
+import { BUY_ROW, SELL_ROW, CHECKS, COMMIT_TX, OPP_SLUG, PRODUCT_NAME, PRODUCT_ID, fmtCaptured, glossProof, proofValue, NO_PROPOSAL_REJECTED, REJECTED_COUNT, ROWS } from '../../../components/commerce/market';
+---
+<Base title="Opportunities | SKUdesk" description="The one opportunity the agent committed on-chain, with every number it rests on and each identity check it passed."><Shell>
+<PageHead title="Opportunities" sub="The one opportunity the agent committed on-chain, with every number it rests on."/>
+
+<section class="mk-what" aria-labelledby="what-h">
+  <h2 id="what-h">What you are looking at</h2>
+  <p>An <b>opportunity</b> is one proposed trade: buy {ECON.units} iPhone 16 Pro clear cases (phone cases, not phones) from one listing and sell them into another for a profit. The agent proposed it, the identity gates confirmed both listings are the same product, and then the contract <b>re-calculated the profit itself</b> before accepting it. There is exactly one real opportunity in the run, and this is it.</p>
+  <p>The contract works in <span class="mk-gloss" title="Integer cents: no decimals or floating point, so the agent and the contract cannot disagree because of rounding.">whole cents</span> and refuses any claim that does not match its own arithmetic. That refusal is called a <span class="mk-gloss" title="Revert: the contract refuses the transaction and undoes it, so nothing changes.">revert</span>. Below: the trade, the arithmetic line by line, and the {CHECKS.length} checks it passed.</p>
+</section>
+
+<section class="card" aria-labelledby="hero-h">
+  <h2 id="hero-h" class="mk-h">{PRODUCT_NAME} <span class="mk-chip locked">IDENTITY LOCKED</span> <span class="mk-chip locked">COMMITTED ON-CHAIN</span></h2>
+  <div class="mk-spread">
+    <div class="mk-leg buy">
+      {BUY_ROW.image && <span class="thumb lg" style="width:72px;height:72px"><img src={BUY_ROW.image} alt="" width="72" height="72" decoding="async"/></span>}
+      <div><small>Buy · {BUY_ROW.id}</small><b>{usdCents(BUY_ROW.priceCents)}</b><span>+ {usdCents(BUY_ROW.shipCents)} shipping · {usdCents(ECON.landedCents)} landed with duty, tax and fees · {BUY_ROW.seller}</span></div>
+    </div>
+    <div class="mk-mid"><small>{ECON.units} units</small><i aria-hidden="true">→</i><small>{usdCents(SELL_ROW.priceCents - ECON.landedCents)} above landed cost, before fees</small></div>
+    <div class="mk-leg sell">
+      {SELL_ROW.image && <span class="thumb lg" style="width:72px;height:72px"><img src={SELL_ROW.image} alt="" width="72" height="72" decoding="async"/></span>}
+      <div><small>Sell · {SELL_ROW.id}</small><b>{usdCents(SELL_ROW.priceCents)}</b><span>{SELL_ROW.seller} · free shipping</span></div>
+    </div>
+  </div>
+
+  <p class="mk-sub"><Provenance kind="snapshot" note={SNAPSHOT.capturedAt.slice(0, 10)} /> SKU {PRODUCT_ID} ({PRODUCT_NAME}). Listing prices as of {fmtCaptured(SNAPSHOT.capturedAt)}: a fixed snapshot of listings that does not update. The buy price is the reference price before shipping, tax and fees; the landed cost adds shipping and fixed assumptions for duty, tax and fees. These are test listings: no real stock or delivery is implied.</p>
+
+  <div class="mk-stats">
+    <div class="mk-stat"><small>Units</small><b>{ECON.units}</b><span>proposed by the agent, within the contract’s hard bounds</span></div>
+    <div class="mk-stat"><small>Landed cost / unit</small><b>{usdCents(ECON.landedCents)}</b><span>buy price, shipping, duty, tax and fees</span></div>
+    <div class="mk-stat hl"><small>Net / unit</small><b>{usdCents(ECON.netCents)}</b><span>after marketplace fee, fulfilment, returns, chain cost</span></div>
+    <div class="mk-stat hl"><small>Margin</small><b>{pct(ECON.marginBps)}</b><span>owner’s floor is {pct(RUN.policy.minMarginBps)}</span></div>
+    <div class="mk-stat"><small>Derived spend</small><b>{usdCents(ECON.spendCents)}</b><span>{ECON.landedCents}¢ × {ECON.units}, computed by the contract; cap {usdCents(RUN.policy.maxExec)}</span></div>
+  </div>
+  <p class="mk-sub">Expected profit if every unit sells as listed: <b>{usdCents(VERIFIED_NET_CENTS)}</b> ({usdCents(ECON.netCents)} × {ECON.units}). That is the figure the contract verified before it let the agent lock any money.</p>
+
+  <h3 class="mk-h">The arithmetic, line by line</h3>
+  <ul class="mk-proof">
+    {ECON.proof.map((l) => (
+      <li><span class="lbl">{l.label}</span><span class="fx">{l.formula}</span><span class="res">{proofValue(l.label, l.resultCents)}</span><span class="gl">{glossProof(l.label)}</span></li>
+    ))}
+  </ul>
+
+  <div class="mk-hash">
+    <div><span class="muted">Opportunity id (oppHash), derived on-chain from product, quote and snapshot</span></div>
+    <code>{RUN.meta.oppHash}</code>
+    <div><span class="muted">snapshotHash, the fingerprint of the market list the agent saw</span> <Provenance kind="agent" note="hash only, data not stored" /></div>
+    <code>{RUN.meta.snapshotHash}</code>
+    <div class="row lg">
+      <span><Provenance kind="onchain" /> Commit transaction: <a class="mk-link tap mono" href={explorer.tx(COMMIT_TX.tx.hash)} target="_blank" rel="noopener noreferrer">{short(COMMIT_TX.tx.hash, 8, 6)}</a> · block {COMMIT_TX.tx.block} · gas {Number(COMMIT_TX.tx.gasUsed).toLocaleString('en-US')} · {COMMIT_TX.tx.status}</span>
+      <a class="btn ghost" href={`/app/opportunities/${OPP_SLUG}/`}>Open the full proof</a>
+    </div>
+  </div>
+</section>
+
+<section class="card" aria-labelledby="chk-h">
+  <h2 id="chk-h" class="mk-h">What the contract checked</h2>
+  <p class="mk-sub">In the order the Solidity runs them. If any one fails, the whole transaction is refused and nothing changes. All {CHECKS.length} passed for this opportunity. Checks the run also tried to break on purpose are marked, with the sentence the contract returned.</p>
+  <ol class="mk-checks">
+    {CHECKS.map((c) => (
+      <li class="mk-check">
+        <span class="mk-tick" aria-hidden="true">✓</span>
+        <div>
+          <h3>{c.title} <span class="mono xs muted">{c.error}</span></h3>
+          <div class="val">{c.value}</div>
+          <p>{c.plain}</p>
+          {c.attack && <div class="tried"><b>Tried in the run.</b> {c.attack}{c.attackTx && <> <a class="mk-link" href={explorer.tx(c.attackTx)} target="_blank" rel="noopener noreferrer">See the reverted transaction</a>.</>}</div>}
+          <div class="meta"><span>proved by Foundry test <span class="mono">{c.test}</span></span></div>
+        </div>
+      </li>
+    ))}
+  </ol>
+  <p class="note">Not on this list: whether the two listings are the same product. That is the identity gates’ job and it happens off-chain; the contract only records a hash of the product. <a class="mk-link" href="/app/policies/">All guardrails</a></p>
+</section>
+
+<section class="card" aria-labelledby="rej-h">
+  <h2 id="rej-h" class="mk-h">What the agent did not choose <Provenance kind="snapshot" /></h2>
+  <p class="mk-sub">{NO_PROPOSAL_REJECTED ? 'The agent’s first proposal passed every gate and every limit, so no proposal was rejected in this run. ' : ''}The other {REJECTED_COUNT} of the {ROWS.length} offers failed an identity gate; the agent’s own reasoning names the tempting ones it skipped. Each tile shows the first failing gate. <a class="mk-link" href="/app/radar/">Full evidence per offer</a></p>
+  <Tape />
+</section>
+
+<div class="mk-next">
+  <a class="btn" href={`/app/lots/${RUN.meta.lot}/`}>Follow the lot it became</a>
+  <a class="btn ghost" href="/app/agent/">How the agent decided</a>
+  <a class="btn ghost" href="/show/">Agent trade</a>
+</div>
+</Shell></Base>

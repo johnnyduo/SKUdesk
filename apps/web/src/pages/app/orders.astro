@@ -1,0 +1,27 @@
+---
+import Base from '../../layouts/Base.astro';
+import Shell from '../../components/shell/Shell.astro';
+import PageHead from '../../components/shell/PageHead.astro';
+import Explain from '../../components/shell/Explain.astro';
+import OrdersView, { type OrdersData } from '../../components/wallet/OrdersView.tsx';
+import ordersJson from '../../data/orders.json';
+import { TRUST } from '../../lib/orders';
+
+// src/data/orders.json is written by tools/order-proof.ts and tools/order-snapshot.ts. Until the contract is deployed and the proof has run
+// it is { "deployed": false }, and this page says so instead of showing an empty view.
+const data = ordersJson as unknown as OrdersData;
+const deployed = data.deployed === true;
+---
+<Base title="Orders | SKUdesk" description="One product, one named verifier: payment is locked in a contract on Robinhood Chain Testnet until delivery is attested, then released or refunded by fixed rules."><Shell>
+<PageHead title="Orders" sub="One product. Payment locked on chain until a named verifier confirms delivery."/>
+<Explain>
+A buyer locks payment in the <b>OrderEscrow</b> contract for one product, the iPhone 16 Pro clear MagSafe case. The buyer picks a seller using a cleared sealed-bid round as price evidence, the seller locks a bond and accepts, and one named verifier says whether the goods arrived. Payment then goes to the seller, or back to the buyer, by fixed rules and deadlines. {TRUST.token}
+</Explain>
+{deployed ? <OrdersView client:load data={data} /> : (
+<section class="card" aria-labelledby="od-nd-h" data-testid="orders-not-deployed">
+  <h2 id="od-nd-h">The order contract is not deployed yet</h2>
+  <p class="note">OrderEscrow has been written and tested, but it is not on the chain yet, so there are no orders to show. When it is deployed and the proof has run, each order will appear here as a timeline of transactions.</p>
+  <p class="note">{TRUST.verifier} {TRUST.verifierAddress} {TRUST.shipment}</p>
+</section>
+)}
+</Shell></Base>

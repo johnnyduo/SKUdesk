@@ -1,0 +1,15 @@
+---
+import Base from '../../layouts/Base.astro';
+import Shell from '../../components/shell/Shell.astro';
+import PageHead from '../../components/shell/PageHead.astro';
+import Explain from '../../components/shell/Explain.astro';
+import OwnerConsole from '../../components/wallet/OwnerConsole.tsx';
+import { CHAIN, DEPLOYMENT, short } from '../../lib/run';
+---
+<Base title="Owner console | SKUdesk" description="The owner console: fund the vault, set the agent's mandate and stop it with one press. Robinhood Chain Testnet, test tokens only."><Shell>
+<PageHead title="Owner console" sub="Fund the vault, set the agent's mandate, and stop it with one press."/>
+<Explain>
+The <b>owner wallet</b> controls the vault: it puts money in, takes free money out, sets the agent's spending limits and holds the kill switch. The AI agent has its own wallet and <b>cannot change any of this</b>. Connect the owner wallet ({short(DEPLOYMENT.owner, 8, 6)}) to act. Any other wallet can try the buttons, but the contract refuses and you will see the contract's own sentence explaining why. Everything here runs on {CHAIN.name} with a test token that has no real value.
+</Explain>
+<OwnerConsole client:load />
+</Shell></Base>

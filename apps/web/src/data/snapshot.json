@@ -1,0 +1,145 @@
+{
+  "capturedAt": "2026-10-03T15:39:11.049Z",
+  "source": "a fixed snapshot (not a live feed)",
+  "offers": [
+    {
+      "id": "shopee-8841",
+      "source": "shopee",
+      "title": "Clear MagSafe Case for iPhone 16 Pro TPU Transparent",
+      "priceCents": 590,
+      "shipCents": 42,
+      "stock": 2400,
+      "seller": "Supplier A",
+      "attributes": {
+        "device": "iPhone 16 Pro",
+        "magsafe": "Yes",
+        "pack": "1"
+      },
+      "gtin": "850063102441"
+    },
+    {
+      "id": "lazada-2207",
+      "source": "lazada",
+      "title": "iPhone 15 Pro Clear MagSafe Case TPU",
+      "priceCents": 410,
+      "shipCents": 38,
+      "stock": 3100,
+      "seller": "Shenzhen hub",
+      "attributes": {
+        "device": "iPhone 15 Pro",
+        "magsafe": "Yes",
+        "pack": "1"
+      }
+    },
+    {
+      "id": "shopee-7710",
+      "source": "shopee",
+      "title": "iPhone 16 Pro Clear MagSafe Case 2-Pack",
+      "priceCents": 520,
+      "shipCents": 44,
+      "stock": 900,
+      "seller": "Direct HK",
+      "attributes": {
+        "device": "iPhone 16 Pro",
+        "magsafe": "Yes",
+        "pack": "2-pack"
+      }
+    },
+    {
+      "id": "lazada-3051",
+      "source": "lazada",
+      "title": "iPhone 16 Pro Max Clear MagSafe Case",
+      "priceCents": 450,
+      "shipCents": 40,
+      "stock": 1800,
+      "seller": "Wholesale feed",
+      "attributes": {
+        "device": "iPhone 16 Pro Max",
+        "magsafe": "Yes",
+        "pack": "1"
+      }
+    },
+    {
+      "id": "shopee-9902",
+      "source": "shopee",
+      "title": "iPhone 16 Pro Clear Case (no magnet)",
+      "priceCents": 380,
+      "shipCents": 36,
+      "stock": 4000,
+      "seller": "Supplier B",
+      "attributes": {
+        "device": "iPhone 16 Pro",
+        "pack": "1"
+      }
+    },
+    {
+      "id": "shopee-6120",
+      "source": "shopee",
+      "title": "Galaxy S25 Clear MagSafe-style Case",
+      "priceCents": 360,
+      "shipCents": 35,
+      "stock": 2500,
+      "seller": "Supplier B",
+      "attributes": {
+        "device": "Galaxy S25",
+        "pack": "1"
+      }
+    },
+    {
+      "id": "google-5501",
+      "source": "google",
+      "title": "iPhone 16 Pro Clear MagSafe Case TPU",
+      "priceCents": 1099,
+      "shipCents": 0,
+      "stock": 800,
+      "seller": "Retail demand",
+      "attributes": {
+        "device": "iPhone 16 Pro",
+        "magsafe": "Yes",
+        "pack": "1"
+      }
+    },
+    {
+      "id": "google-5502",
+      "source": "google",
+      "title": "iPhone 15 Pro Clear MagSafe Case TPU",
+      "priceCents": 1249,
+      "shipCents": 0,
+      "stock": 700,
+      "seller": "Retail demand",
+      "attributes": {
+        "device": "iPhone 15 Pro",
+        "magsafe": "Yes",
+        "pack": "1"
+      }
+    },
+    {
+      "id": "google-5503",
+      "source": "google",
+      "title": "iPhone 16 Pro Max Clear MagSafe Case",
+      "priceCents": 1199,
+      "shipCents": 0,
+      "stock": 650,
+      "seller": "Retail demand",
+      "attributes": {
+        "device": "iPhone 16 Pro Max",
+        "magsafe": "Yes",
+        "pack": "1"
+      }
+    },
+    {
+      "id": "lazada-4410",
+      "source": "lazada",
+      "title": "iPhone 16 Pro Clear MagSafe Case",
+      "priceCents": 1059,
+      "shipCents": 0,
+      "stock": 500,
+      "seller": "Lazada Store",
+      "attributes": {
+        "device": "iPhone 16 Pro",
+        "magsafe": "Yes",
+        "pack": "1"
+      }
+    }
+  ]
+}

@@ -1,0 +1,344 @@
+---
+import '../styles/global.css';
+import '../components/deck/deck.css';
+import DevTag from '../components/deck/DevTag.astro';
+import WorkflowDiagram from '../components/flow/WorkflowDiagram';
+import { stats, attacks, txOk, txFailed, commitTx, lie, model, core, token, chainId, isReal, addrUrl, txUrl, short, int, REPO, run, proceeds, BY_CONSTRUCTION } from '../components/deck/lib';
+import agents from '../data/agents.json';
+
+const coreHref = addrUrl(core);
+const registry = agents.registry;
+const registryHref = addrUrl(registry);
+// The original agent's identity token in the shared registry (reported by the operator; not stored in the repo data).
+const ORIGINAL_AGENT_ID = 119;
+const LIVE_URL = 'https://skudesk.lol';
+const ONE = 'Hire an AI agent with a budget it cannot exceed and numbers it cannot misreport.';
+const TOTAL = 11;
+const failed = txFailed[0];
+const failedHref = failed ? txUrl(failed.hash) : null;
+const Mark = `<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M8 22 16 8l8 14" stroke="#CCFF00" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+---
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="theme-color" content="#080908" />
+<meta name="description" content="SKUdesk pitch deck: a contract on Robinhood Chain that caps an AI agent's budget and re-derives its numbers." />
+<title>SKUdesk Deck</title>
+<link rel="canonical" href={`${LIVE_URL}/deck/`} />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="SKUdesk" />
+<meta property="og:title" content="SKUdesk Deck" />
+<meta property="og:description" content="A contract on Robinhood Chain that caps an AI agent's budget and re-derives its numbers." />
+<meta property="og:url" content={`${LIVE_URL}/deck/`} />
+<meta property="og:image" content={`${LIVE_URL}/og.png`} />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:image" content={`${LIVE_URL}/og.png`} />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23080908'/><path d='M8 22 16 8l8 14' stroke='%23CCFF00' stroke-width='2.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>" />
+<script is:inline>document.documentElement.classList.add('js');</script>
+</head>
+<body class="dk">
+<a class="dk-skip" href="#dk-stage">Skip to slides</a>
+<div class="dk-progress" aria-hidden="true"><i id="dk-bar"></i></div>
+
+<main class="dk-stage" id="dk-stage">
+
+<!-- 1 TITLE -->
+<section class="slide" data-title="Title" aria-label="Slide 1: Title">
+  <div class="sl">
+    <div class="sl-eyebrow">SKUdesk &middot; Arbitrum Open House Singapore Buildathon &middot; Robinhood Chain track</div>
+    <h1>{ONE}</h1>
+    <p class="lead">A smart contract holds the budget, re-derives the agent's profit math itself, and refuses anything that does not add up.</p>
+    <div class="meta"><span class="chip on">SKUdesk</span><span class="chip off">Built on Robinhood Chain / Arbitrum Orbit</span><span class="chip">Testnet prototype</span></div>
+    <div class="sl-foot"><span class="sl-brand"><Fragment set:html={Mark} />SKUdesk</span></div>
+  </div>
+  <details class="notes"><summary>Speaker notes</summary><p>Say the line slowly. Two promises: a budget it cannot exceed, numbers it cannot misreport. Both are enforced by a contract, not by trust in the agent or in us. This is a testnet prototype; say so once, early.</p></details>
+</section>
+
+<!-- 2 PROBLEM -->
+<section class="slide" data-title="Problem" aria-label="Slide 2: Problem">
+  <div class="sl">
+    <div class="sl-eyebrow">02 &middot; Problem</div>
+    <h2>Agents that move money are trusted on faith.</h2>
+    <div class="cols">
+      <div class="card bad"><div class="kicker">Today</div><p>An autonomous agent decides what to buy and how much, then reports its own profit. Nothing independent checks the number or the amount before the money moves.</p></div>
+      <div class="card bad"><div class="kicker">When it goes wrong</div><p>A wrong number or an overspend is discovered <b>after</b> the money is gone. The audit trail is a log written by the same agent.</p></div>
+    </div>
+    <p class="lead">If an agent can be wrong, or be talked into being wrong, the guard has to sit where the money is.</p>
+    <div class="sl-foot"><span class="sl-brand"><Fragment set:html={Mark} />SKUdesk</span></div>
+  </div>
+  <details class="notes"><summary>Speaker notes</summary><p>Keep this short. The point is the ordering: today the check happens after the spend. We want it before. No statistics claimed here on purpose.</p></details>
+</section>
+
+<!-- 3 INSIGHT -->
+<section class="slide" data-title="Insight" aria-label="Slide 3: Insight">
+  <div class="sl">
+    <div class="sl-eyebrow">03 &middot; Insight</div>
+    <h2>The agent proposes. <span class="hl">The contract disposes.</span></h2>
+    <div class="pd">
+      <div class="card"><div class="kicker">Agent sends</div><p>The quote, its claimed net profit and margin, and a number of units. It does <b>not</b> send the spend.</p></div>
+      <div class="arrow" aria-hidden="true">&rarr;</div>
+      <div class="card good"><div class="kicker">Contract does</div><p>Re-derives the unit economics from the quote, <b>derives the spend itself</b> (landed cost x units), checks caps, and reverts with a readable reason.</p></div>
+    </div>
+    {lie && (
+      <div class="revert" role="note"><b>{lie.error}</b>: {lie.sentence}</div>
+    )}
+    <div class="sl-foot"><span class="sl-brand"><Fragment set:html={Mark} />SKUdesk</span><span class="sp"></span><DevTag /></div>
+  </div>
+  <details class="notes"><summary>Speaker notes</summary><p>Most guardrails limit how much. This one also checks whether the reasoning behind the amount is correct. The red box is a real revert string from the run, decoded from the contract's custom error. Careful wording: the contract re-derives the economics and enforces the budget. It does not verify the product match; that is checked off-chain.</p></details>
+</section>
+
+<!-- 4 SESSION KEYS -->
+<section class="slide" data-title="Why not session keys" aria-label="Slide 4: Why not session keys">
+  <div class="sl">
+    <div class="sl-eyebrow">04 &middot; Versus session keys</div>
+    <h2 class="wide">Session keys limit what an agent may do. We also check what its numbers say.</h2>
+    <table class="cmp">
+      <thead><tr><th></th><th>Session keys / smart-account policies</th><th class="us">SKUdesk mandate vault</th></tr></thead>
+      <tbody>
+        <tr><td class="q">Budget</td><td data-l="Session keys">Caps spend per call or per period</td><td class="us" data-l="SKUdesk">Per-run cap on each purchase and a per-UTC-day cap on new commitments, on a spend the contract derives itself</td></tr>
+        <tr><td class="q">Where money can go</td><td data-l="Session keys">Restricts target contracts and functions</td><td class="us" data-l="SKUdesk">Escrow releases only to an owner-set payee allowlist</td></tr>
+        <tr><td class="q">Are the agent's numbers right?</td><td data-l="Session keys">Out of scope: trusts the amount and the claimed profit</td><td class="us" data-l="SKUdesk">Re-derives net and margin; mismatch reverts with both values</td></tr>
+        <tr><td class="q">Inputs and replay</td><td data-l="Session keys">Not modelled</td><td class="us" data-l="SKUdesk">Quote hash, snapshot hash, TTL on the agent-supplied observation time, one commit per quote-and-snapshot id</td></tr>
+        <tr><td class="q">Profit</td><td data-l="Session keys">Self-reported</td><td class="us" data-l="SKUdesk">Measured on tokens actually received at settlement</td></tr>
+      </tbody>
+    </table>
+    <p class="body"><b>Complementary, not competing.</b> Session keys and smart-account policies are good at bounding what a key can call. A mandate vault bounds what the call is allowed to <i>mean</i>. They compose, and <a href="/app/create">/app/create</a> shows it: each agent acts through a locked ERC-4337 account that can call only its own vault, and the vault still checks the numbers.</p>
+    <div class="sl-foot"><span class="sl-brand"><Fragment set:html={Mark} />SKUdesk</span></div>
+  </div>
+  <details class="notes"><summary>Speaker notes</summary><p>Do not disparage session keys or ZeroDev; they solve a different layer and we would happily sit behind one. The gap is semantic: a spend limit cannot tell a correct decision from a wrong one inside the limit. Also be honest that we do not verify the truth of input prices (slide 10).</p></details>
+</section>
+
+<!-- 5 HOW IT WORKS -->
+<section class="slide" data-title="How it works" aria-label="Slide 5: How it works">
+  <div class="sl">
+    <div class="sl-eyebrow">05 &middot; How it works</div>
+    <h2 class="full">Six steps. The money-moving ones are on-chain.</h2>
+    <div class="how">
+    <WorkflowDiagram compact animate={false} hideCaption />
+    <div class="stack">
+      <div class="card good"><div class="kicker">Enforced by the contract</div><p>Spend derivation, per-run cap, daily commitment cap, margin floor, quote hash, staleness check on the agent-supplied time, replay check per quote-and-snapshot id, payee allowlist, escrow accounting, tokens actually received at settlement.</p></div>
+      <div class="card warn"><div class="kicker">Enforced off-chain</div><p>Product identity (same SKU, model, pack, MagSafe). The contract sees only the committed <span class="mono">productHash</span>, so identity is auditable, not enforced on-chain.</p></div>
+    </div>
+    </div>
+    <div class="sl-foot"><span class="sl-brand"><Fragment set:html={Mark} />SKUdesk</span></div>
+  </div>
+  <details class="notes"><summary>Speaker notes</summary><p>Walk left to right. Stress the honest split: identity gates are TypeScript, committed as a hash. We say the contract re-derives the economics and enforces the budget, never that it verifies the product match. After escrow, the lifecycle steps (received, listed, sold) are agent-attested in v1.</p></details>
+</section>
+
+<!-- 6 THE RUN -->
+<section class="slide" data-title="The run" aria-label="Slide 6: The run">
+  <div class="sl">
+    <div class="sl-eyebrow">06 &middot; The run</div>
+    <h2 class="wide">One real proposal, checked by the contract and settled in test tokens.</h2>
+    <ul class="stats">
+      <li><span class="v">{int(stats.units)}</span><span class="l">units</span></li>
+      <li><span class="v">{stats.spend}</span><span class="l">spend (derived on-chain)</span></li>
+      <li><span class="v">{stats.netPerUnit}</span><span class="l">net per unit</span></li>
+      <li><span class="v">{stats.margin}</span><span class="l">margin (floor {stats.marginFloor})</span></li>
+      <li class="hero"><span class="v hl">{stats.realized}</span><span class="l">settled in the run from the owner’s test wallet</span></li>
+    </ul>
+    <div class="meta">
+      <span class="chip off">model {model}</span>
+      <span class="chip">{txOk.length} confirmed tx</span>
+      <span class="chip err">{attacks.length} requests refused</span>
+      <span class="chip">script run {stats.seconds}</span>
+      <span class:list={['chip', stats.realizedMatches ? 'on' : 'err']}>{stats.realizedMatches ? `settled ${stats.realized} = ${stats.netPerUnit} x ${int(stats.units)}, by construction` : `settled ${stats.realized} vs expected ${stats.expected}`}</span>
+    </div>
+    <p class="body">{run.meta.note}</p>
+    <p class="body"><b>Where the proceeds came from.</b> {proceeds.sentence} {BY_CONSTRUCTION}</p>
+    <div class="sl-foot"><span class="sl-brand"><Fragment set:html={Mark} />SKUdesk</span><span class="sp"></span><DevTag /></div>
+  </div>
+  <details class="notes"><summary>Speaker notes</summary><p>Settled profit is not what the agent said; it is tokens received at settlement minus escrow paid out, computed in the contract. Be plain that the proceeds were paid from the owner’s test wallet and sized to the verified net, so profit matching the net is by construction in this run. It is not a market result, and no goods moved. The market data is a fixed snapshot, not a live feed, and the settlement token is a testnet stand-in. Every figure on this slide is read from run.json, so it updates when the run data is updated.</p></details>
+</section>
+
+<!-- 7 ATTACKS -->
+<section class="slide" data-title="Requests the contract refused" aria-label="Slide 7: Requests the contract refused">
+  <div class="sl">
+    <div class="sl-eyebrow">07 &middot; Requests the contract refused</div>
+    <h2 class="wide">We made the agent cheat. The contract said no, in plain words.</h2>
+    <ul class="atk">
+      {attacks.map((a) => (
+        <li><span class="chip err">{a.error}</span><b>{a.name}</b><p>{a.sentence}</p></li>
+      ))}
+    </ul>
+    {failed && (
+      <div class="failtx">
+        <span class="chip err">FAILED ON-CHAIN TX</span>
+        <span>{failed.title}</span>
+        <span class="mono">{short(failed.hash)}</span>
+        {failedHref ? <a href={failedHref} target="_blank" rel="noopener noreferrer">view on explorer</a> : <span>(local dev chain, no explorer)</span>}
+      </div>
+    )}
+    <p class="body">Tamper cases are decoded from <span class="mono">eth_call</span> simulations run as the agent address, because the RPC refuses to broadcast a transaction that fails gas estimation. One failing transaction is sent with a forced gas limit so a revert is visible on-chain.</p>
+    <div class="sl-foot"><span class="sl-brand"><Fragment set:html={Mark} />SKUdesk</span><span class="sp"></span><DevTag /></div>
+  </div>
+  <details class="notes"><summary>Speaker notes</summary><p>Read the first sentence aloud, it is the money shot: claimed versus derived. Then point out the others cover overspend, replay, stale quote, swapped quote and a payee off the allowlist. Be upfront that most were checked with read-only calls from the agent address; exactly one reverted transaction is on-chain.</p></details>
+</section>
+
+<!-- 8 WHY ROBINHOOD CHAIN -->
+<section class="slide" data-title="Why Robinhood Chain" aria-label="Slide 8: Why Robinhood Chain / Arbitrum">
+  <div class="sl">
+    <div class="sl-eyebrow">08 &middot; Why Robinhood Chain / Arbitrum</div>
+    <h2 class="wide">Re-verifying every decision on-chain only works if execution is cheap.</h2>
+    <div class="cols three">
+      <div class="card good"><div class="kicker">Fast, low-fee EVM</div><p>Our check recomputes fees, margin and spend inside the transaction that commits the opportunity.{commitTx && <> In the run that commit used <span class="mono">{int(commitTx.gas)}</span> gas.</>} That is practical on an Arbitrum Orbit chain.</p></div>
+      <div class="card"><div class="kicker">Stablecoin rails</div><p>Escrow and settlement are token transfers, so profit is measured on money received. <b>Today the settlement token is mUSDG</b>, a test token on testnet we deployed. The vault takes the token address as a constructor argument.</p></div>
+      <div class="card"><div class="kicker">Roadmap: stock-token treasury</div><p>Idle vault funds in tokenized stocks on Robinhood Chain, valued with Chainlink feeds. <b>Not built.</b> A read-only treasury view is a stretch goal, not a claim.</p></div>
+    </div>
+    <p class="body">Status: Robinhood Chain testnet only. No mainnet deployment, no partnership or prize claimed.</p>
+    <div class="sl-foot"><span class="sl-brand"><Fragment set:html={Mark} />SKUdesk</span><span class="sp"></span><DevTag /></div>
+  </div>
+  <details class="notes"><summary>Speaker notes</summary><p>Honest framing: cheap execution is what makes on-chain re-verification of every decision realistic. Do not say we are partners with anyone, do not say mainnet, call the test token mUSDG, a stand-in for USDG, and never plain USDG or USDC. The stock-token treasury and Chainlink feeds are roadmap.</p></details>
+</section>
+
+<!-- 9 MARKET -->
+<section class="slide" data-title="The market" aria-label="Slide 9: The market, BlindBook">
+  <div class="sl">
+    <div class="sl-eyebrow">09 &middot; The market (BlindBook)</div>
+    <h2 class="wide">A sealed-bid market where each round clears at one price.</h2>
+    <ol class="steps3">
+      <li><span class="n">1</span><b>Commit</b><span>Post a hash of your order and lock a fixed bond. Nobody can read it.</span></li>
+      <li><span class="n">2</span><b>Reveal</b><span>Open your order. A reveal is checked against its hash.</span></li>
+      <li><span class="n">3</span><b>Clear</b><span>Every trade in the round gets one uniform price.</span></li>
+    </ol>
+    <p class="body">A commit-reveal batch auction in 45 second epochs. Orders stay hidden until reveal. An order that is never revealed forfeits the bond.</p>
+    <div class="cols">
+      <div class="card good"><div class="kicker">What is real</div>
+        <ul>
+          <li>Prices are real on-chain clearing prices on Robinhood Chain Testnet.</li>
+          <li>Commit, reveal and clear are contract calls you can read on the explorer.</li>
+        </ul>
+      </div>
+      <div class="card warn"><div class="kicker">What is not</div>
+        <ul>
+          <li>Liquidity comes from SKUdesk bots.</li>
+          <li>Units are receipts issued by the operator, not backed by on-chain collateral.</li>
+          <li>The settlement token is mUSDG, a test token.</li>
+          <li>It is <b>not</b> a Uniswap v4 hook. It is its own contract.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="sl-foot"><span class="sl-brand"><Fragment set:html={Mark} />SKUdesk</span><span class="sp"></span><a class="foot-link" href="/market">Open the live market: /market</a></div>
+  </div>
+  <details class="notes"><summary>Speaker notes</summary><p>The market is a second product built on the same chain. Say what it is in one breath: a sealed-bid batch auction, 45 second epochs, one price per round. Then be plain about the edges: the prices are real clearing prices, but the other side of every trade is our bots, the units are operator-issued receipts and the token is a test token. It is not a Uniswap v4 hook; do not let anyone leave thinking it is. The owner powers (pause, issuing units) are on the next slide.</p></details>
+</section>
+
+<!-- 10 LIMITATIONS -->
+<section class="slide dense" data-title="Limitations and roadmap" aria-label="Slide 10: Honest limitations and roadmap">
+  <div class="sl">
+    <div class="sl-eyebrow">10 &middot; Honest limitations and roadmap</div>
+    <h2 class="wide">What this does not do yet.</h2>
+    <div class="card warn"><div class="kicker">Limitations today</div>
+      <ul class="two">
+        <li><b>Contracts are not audited.</b> They are testnet prototypes.</li>
+        <li><b>Math, not truth.</b> The contract verifies the arithmetic, not that the input prices are real. The oracle problem remains. We commit a <span class="mono">snapshotHash</span> so inputs are auditable after the fact.</li>
+        <li><b>The daily cap limits commitments, not cash-out.</b> Opportunities do not expire, so commitments banked on earlier days can be funded later, and across a midnight up to twice the cap can be committed within 24 hours. Cash-out is bounded by the vault balance; each lot is at most the per-trade cap.</li>
+        <li><b>Agent-supplied inputs.</b> The agent picks the observation time and the snapshot hash, so the freshness check and the replay id bind its own claim. Settlement proceeds are agent-chosen but pulled as real tokens from an allowlisted payer.</li>
+        <li><b>Owner powers on the BlindBook market.</b> The market owner can pause trading. A pause that runs to the end of the reveal window forfeits the bond of every order not yet revealed to the owner&rsquo;s treasury. The owner can also issue new units. Units are warehouse receipts, not backed by on-chain collateral.</li>
+        <li><b>Agent-attested lifecycle.</b> Purchased, received, listed and sold steps after escrow are attested by the agent. A test-token transfer stands in for a marketplace payout.</li>
+        <li><b>One owner and one agent per vault.</b> No LP flow yet.</li>
+        <li><b>Identity registry is shared.</b> The original agent is id {ORIGINAL_AGENT_ID} in the ERC-8004 Identity Registry already deployed on Robinhood Chain Testnet at {registryHref ? <a href={registryHref} target="_blank" rel="noopener noreferrer" class="mono">{registry}</a> : <span class="mono">{registry}</span>}. It is a Draft standard and a shared contract run by someone else: upgradeable, implementation source not verified. The Deploy-your-agent factory registers new agents in that same registry. Reputation and validation registries are not built.</li>
+        <li>Product identity is checked off-chain, committed as a hash.</li>
+      </ul>
+    </div>
+    <div class="card good"><div class="kicker">Roadmap</div>
+      <ul class="road">
+        <li>Oracle-signed or TLS-notarized price inputs</li>
+        <li>Proof-of-purchase integrations for lifecycle steps</li>
+        <li>Stylus re-verification of the economics</li>
+        <li>LP vault so third parties can fund the mandate</li>
+        <li>A real stablecoin as the settlement token</li>
+        <li>Stock-token treasury with Chainlink feeds</li>
+        <li>An independent audit</li>
+      </ul>
+    </div>
+    <div class="sl-foot"><span class="sl-brand"><Fragment set:html={Mark} />SKUdesk</span></div>
+  </div>
+  <details class="notes"><summary>Speaker notes</summary><p>Say these before anyone else finds them. Open with the plain one: the contracts are not audited. The biggest design limit is the oracle problem: if the agent is fed false prices the contract will faithfully verify false math. Snapshot hashes make that auditable, not impossible. Then the daily cap: it bounds new commitments per UTC day (up to twice in a rolling 24 hours across midnight), not cash-out, because opportunities do not expire. The contracts are deployed and immutable, so these are disclosed rather than patched; a redeploy would add an expiry on mintLot and fundLot and stop clear from forfeiting bonds while paused. Identity: the original agent is id 119 in a shared ERC-8004 registry that someone else runs; it can be upgraded and its source is not verified, and our factory uses the same registry. Go-to-market is a hypothesis only: teams that want to let agents handle small operating budgets are the first plausible users. No market-size or user numbers are claimed.</p></details>
+</section>
+
+<!-- 11 CLOSE -->
+<section class="slide" data-title="Close" aria-label="Slide 11: Close">
+  <div class="sl">
+    <div class="sl-eyebrow">11 &middot; What to look at</div>
+    <p class="oneliner">{ONE}</p>
+    <ul class="links">
+      <li><span class="k">Live site</span><a href={LIVE_URL} target="_blank" rel="noopener noreferrer">{LIVE_URL}</a></li>
+      <li><span class="k">Run</span><span><a href="/show">/show</a> (walks through the agent run and tries to check it against the public RPC; not live)</span></li>
+      <li><span class="k">Market</span><span><a href="/market">/market</a> (BlindBook, 45 second sealed-bid rounds)</span></li>
+      <li><span class="k">Repo</span><a href={REPO} target="_blank" rel="noopener noreferrer">{REPO}</a></li>
+      <li><span class="k">Vault (SKUdeskCore)</span>{coreHref ? <a href={coreHref} target="_blank" rel="noopener noreferrer">{core}</a> : <span><code>{core}</code> (local dev chain {chainId}, not on the explorer)</span>}</li>
+      <li><span class="k">Deploy an agent</span><span><a href="/app/create">/app/create</a> (vault + locked ERC-4337 account + identity token in one transaction; nothing runs the agent yet)</span></li>
+      <li><span class="k">Settlement token</span><span><code>{token}</code> mUSDG, a test token</span></li>
+      <li><span class="k">Network</span><span>{isReal ? 'Robinhood Chain Testnet (46630)' : `Local dev chain ${chainId}. The Robinhood Chain Testnet run is not yet loaded.`}</span></li>
+    </ul>
+    <div class="sl-foot"><span class="sl-brand"><Fragment set:html={Mark} />SKUdesk</span><span class="sp"></span><DevTag /></div>
+  </div>
+  <details class="notes"><summary>Speaker notes</summary><p>Close on the one-liner. Give them the live URL, then invite them to open /show, click a transaction, and read the revert sentences themselves, and to try /market. Everything on the page is a testnet prototype and the contracts are not audited.</p></details>
+</section>
+
+</main>
+
+<nav class="dk-ctl" aria-label="Slide controls">
+  <button class="dk-b" id="dk-prev" aria-label="Previous slide" type="button">&larr;</button>
+  <span class="dk-count" id="dk-count">1 / {TOTAL}</span>
+  <button class="dk-b" id="dk-next" aria-label="Next slide" type="button">&rarr;</button>
+  <button class="dk-b txt" id="dk-notes" aria-pressed="false" aria-label="Toggle speaker notes" type="button">NOTES</button>
+</nav>
+
+<script is:inline>
+(function () {
+  var root = document.documentElement;
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var n = slides.length, cur = 0;
+  var bar = document.getElementById('dk-bar'), count = document.getElementById('dk-count');
+  var prev = document.getElementById('dk-prev'), next = document.getElementById('dk-next'), nb = document.getElementById('dk-notes');
+  var q = new URLSearchParams(location.search);
+  var printPreview = q.get('print') !== null;
+  if (printPreview) { root.classList.add('pm', 'preview'); }
+  window.addEventListener('beforeprint', function () { root.classList.add('pm'); });
+  window.addEventListener('afterprint', function () { if (!printPreview) root.classList.remove('pm'); });
+  function setNotes(on) {
+    root.classList.toggle('notes-on', on); nb.setAttribute('aria-pressed', String(on)); nb.classList.toggle('on', on);
+    slides.forEach(function (s) { var d = s.querySelector('details.notes'); if (d) d.open = on; });
+  }
+  setNotes(q.get('notes') === '1');
+  function go(i, push) {
+    cur = Math.max(0, Math.min(n - 1, i));
+    slides.forEach(function (s, k) { s.classList.toggle('active', k === cur); });
+    slides[cur].scrollTop = 0;
+    count.textContent = (cur + 1) + ' / ' + n;
+    bar.style.width = ((cur + 1) / n * 100) + '%';
+    prev.disabled = cur === 0; next.disabled = cur === n - 1;
+    if (push !== false) { try { history.replaceState(null, '', location.pathname + location.search + '#' + (cur + 1)); } catch (e) {} }
+  }
+  var h = parseInt((location.hash || '').replace('#', ''), 10);
+  go(h >= 1 && h <= n ? h - 1 : 0, false);
+  prev.addEventListener('click', function () { go(cur - 1); });
+  next.addEventListener('click', function () { go(cur + 1); });
+  nb.addEventListener('click', function () { setNotes(!root.classList.contains('notes-on')); });
+  window.addEventListener('hashchange', function () { var v = parseInt(location.hash.slice(1), 10); if (v >= 1 && v <= n) go(v - 1, false); });
+  document.addEventListener('keydown', function (e) {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    var t = e.target;
+    if (t && t.tagName === 'SUMMARY' && (e.key === ' ' || e.key === 'Enter')) return;
+    var k = e.key;
+    if (k === 'ArrowRight' || k === 'PageDown' || (k === ' ' && !e.shiftKey)) { e.preventDefault(); go(cur + 1); }
+    else if (k === 'ArrowLeft' || k === 'PageUp' || (k === ' ' && e.shiftKey)) { e.preventDefault(); go(cur - 1); }
+    else if (k === 'Home') { e.preventDefault(); go(0); }
+    else if (k === 'End') { e.preventDefault(); go(n - 1); }
+    else if (k === 'n' || k === 'N') { setNotes(!root.classList.contains('notes-on')); }
+  });
+  var sx = null, sy = null;
+  document.addEventListener('touchstart', function (e) { sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, { passive: true });
+  document.addEventListener('touchend', function (e) {
+    if (sx === null) return;
+    var dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy; sx = null;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) go(cur + (dx < 0 ? 1 : -1));
+  }, { passive: true });
+})();
+</script>
+</body>
+</html>

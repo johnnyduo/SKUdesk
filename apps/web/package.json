@@ -1,0 +1,38 @@
+{
+  "name": "web",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev --port 4321",
+    "build": "astro build && node scripts/check-manifest.mjs && node scripts/copy-lint.mjs",
+    "preview": "astro preview",
+    "gen:cases": "node scripts/gen-cases.mjs",
+    "deploy": "npm run build && node scripts/copy-lint.mjs && wrangler deploy",
+    "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test \"src/showcase/*.test.ts\" \"scripts/*.test.mjs\"",
+    "test:worker": "node --test --disable-warning=MODULE_TYPELESS_PACKAGE_JSON 'worker/test/**/*.test.ts'",
+    "types:worker": "wrangler types worker/worker-configuration.d.ts",
+    "check:worker": "wrangler types worker/worker-configuration.d.ts && tsc -p worker/tsconfig.json",
+    "gen:png": "node scripts/gen-cases-png.mjs",
+    "test:site": "node --test 'test/site/**/*.test.ts' 'scripts/test/**/*.test.mjs'",
+    "check:manifest": "node scripts/check-manifest.mjs",
+    "smoke:worker": "node worker/scripts/smoke.mjs",
+    "check:site": "tsc -p test/site/tsconfig.json",
+    "test:built": "node --test 'test/built/**/*.test.mjs'",
+    "test:market": "node --test --disable-warning=MODULE_TYPELESS_PACKAGE_JSON 'test/market/**/*.test.ts'",
+    "check:market": "tsc -p test/market/tsconfig.json",
+    "test:probe-assets": "node ../../scripts/probe-assets.cjs",
+    "probe:ready": "node ../../scripts/market-probe.cjs"
+  },
+  "dependencies": {
+    "@astrojs/react": "^3.6.2",
+    "astro": "^4.16.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "three": "0.186.1",
+    "viem": "^2.21.0"
+  },
+  "devDependencies": {
+    "playwright": "^1.58.0",
+    "wrangler": "^4.147.0"
+  }
+}

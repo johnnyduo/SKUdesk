@@ -1,0 +1,6 @@
+{"search_metadata":{"id":"fixture","status":"Success"},"search_parameters":{"engine":"google_shopping","q":"iPhone 16 Pro Clear MagSafe Case","gl":"us","hl":"en"},"shopping_results":[
+{"position":1,"title":"Insignia Hard-Shell Case with MagSafe for iPhone 16 Pro","product_id":"901","product_link":"https://www.google.com/search?ibp=oshop&prds=catalogid:901","source":"Best Buy","price":"$6.99","extracted_price":6.99},
+{"position":2,"title":"MagSafe Case for iPhone 16 Pro","product_id":"902","product_link":"https://www.google.com/search?ibp=oshop&prds=catalogid:902","source":"Example Store","price":"$7.99","extracted_price":7.99},
+{"position":3,"title":"iPhone 16 Pro Clear MagSafe Case","product_id":"903","product_link":"https://www.google.com/search?ibp=oshop&prds=catalogid:903","source":"Example Store","price":"$10.49","extracted_price":10.49},
+{"position":4,"title":"Transparent MagSafe Case for iPhone 16 Pro","product_id":"904","product_link":"https://www.google.com/search?ibp=oshop&prds=catalogid:904","source":"Other Store","price":"$14.99","extracted_price":14.99}
+]}

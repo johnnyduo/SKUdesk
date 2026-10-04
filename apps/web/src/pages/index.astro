@@ -1,0 +1,89 @@
+---
+import Base from '../layouts/Base.astro';
+import '../styles/landing.css';
+import ShowcaseStage from '../components/hero/ShowcaseStage.astro';
+import PieceFlow from '../components/landing/PieceFlow.astro';
+import RoundFlow from '../components/landing/RoundFlow.astro';
+import SiteFooter from '../components/landing/SiteFooter.astro';
+import TrackRecord from '../components/landing/TrackRecord.astro';
+import history from '../data/blindbook-history.json';
+import { trackRecord, fmtInt } from '../showcase/track-record';
+import { caseFor } from '../components/commerce/images';
+import { liveOpps, fmtUSD, fmtBps, CATALOG } from '../lib/engine';
+import { RUN, SNAPSHOT, ECON, REALIZED_CENTS, TXS, usdCents, pct } from '../lib/run';
+import { topMatches } from '../showcase/top-matches';
+import { MARKET_PRODUCTS, listLine } from '../showcase/market-products';
+
+// Every number below comes from code: the ring from the engine, the proof points from the recorded run.
+const snap = (id: string) => SNAPSHOT.offers.find((o) => o.id === id);
+const buyOffer = snap(RUN.accepted.buyOfferId), sellOffer = snap(RUN.accepted.sellOfferId);
+// The product is resolved from the recorded buy offer's barcode, not assumed to be the hero.
+const recordedProduct = buyOffer?.gtin ? CATALOG.products.find((p) => p.gtin === buyOffer.gtin)?.id : undefined;
+const recordedRun = buyOffer && sellOffer && recordedProduct
+  ? { productId: recordedProduct, buyCents: buyOffer.priceCents, sellCents: sellOffer.priceCents, netCents: ECON.netCents, marginBps: ECON.marginBps }
+  : null;
+const runCards = topMatches(liveOpps(0), recordedRun, 10)
+  .filter((it) => it.recorded)
+  .map((it) => ({
+    kind: 'run' as const, name: it.title, src: caseFor(it.productId),
+    line: `Buy ${fmtUSD(it.buyCents)} ${it.buy} → Sell ${fmtUSD(it.sellCents)} ${it.sell}`,
+    result: `+${fmtUSD(it.netCents)} per unit · ${fmtBps(it.marginBps)}`, recorded: true,
+  }));
+if (runCards.length !== 1) throw new Error('hero: the recorded run must appear exactly once in the ring (check run.json vs liveOpps)');
+const marketCards = MARKET_PRODUCTS.map((p) => ({
+  kind: 'market' as const, name: p.name, src: p.art, category: p.category, listCents: p.listCents,
+  line: listLine(p), result: 'Sealed bids, one price', recorded: false,
+}));
+const cards = [...runCards, ...marketCards].map((c, i) => ({ ...c, rank: i + 1 }));
+const WORDS = ['Agents', 'compete', 'on', 'the', 'same', 'product', 'in', 'sealed', 'rounds.'];
+const heroLabel = cards.length
+  ? `${cards.length} products on a rotating ring: an on-chain run of a phone case and ${marketCards.length} products from the market. Front product: ${cards[0].name}, ${cards[0].line}.`
+  : 'Product showcase';
+const tried = RUN.attacks.length;
+const tr = trackRecord((history as any).events, Number((history as any).head));
+const txOk = TXS.filter((e) => e.tx.status === 'success').length;
+const units = RUN.accepted.units;
+const realized = usdCents(REALIZED_CENTS);
+const realizedFmt = realized;
+---
+<Base title="SKUdesk — Agents compete on the same product in sealed rounds.">
+<script slot="head" is:inline>document.documentElement.classList.add('js')</script>
+
+<header class="lp-nav"><div class="lp-wrap">
+<a class="lp-logo" href="/" aria-label="SKUdesk — home"><span class="logo-mark"><svg width="16" height="16" viewBox="0 0 32 32" aria-hidden="true"><path d="M8 22 16 8l8 14" stroke="#CCFF00" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>SKUdesk</a>
+<nav class="lp-links" aria-label="Sections"><a href="#round">How it works</a><a href="#how">Safety</a></nav>
+<span class="spacer"></span>
+<a class="btn" href="/app">Launch desk</a>
+</div></header>
+
+<main id="main" class="lp">
+
+<ShowcaseStage cards={cards} words={WORDS} gradFrom={7} ariaLabel={heroLabel} />
+
+<section class="ls-src" aria-label="Marketplaces compared"><div class="lp-wrap">
+<p class="ls-src-h">Compares prices across</p>
+<ul class="ls-src-list">
+<li><img src="/img/sources/google-shopping.png" alt="Google Shopping" width="677" height="112" decoding="async"/></li>
+<li><img src="/img/sources/lazada.png" alt="Lazada" width="427" height="112" decoding="async"/></li>
+<li><img src="/img/sources/shopee.png" alt="Shopee" width="79" height="112" decoding="async"/></li>
+<li><img src="/img/sources/ebay.png" alt="eBay" width="279" height="112" decoding="async"/></li>
+<li><img src="/img/sources/best-buy.png" alt="Best Buy" width="163" height="112" decoding="async"/></li>
+</ul>
+</div></section>
+
+<TrackRecord rounds={fmtInt(tr.rounds)} bids={fmtInt(tr.bids)} bidders={fmtInt(tr.bidders)} fills={fmtInt(tr.fills)} profit={realizedFmt} runLine={`${units} units, ${txOk} transactions`} headBlock={fmtInt(tr.headBlock)} />
+
+<RoundFlow name={runCards[0].name} src={runCards[0].src} />
+
+<PieceFlow cap={usdCents(RUN.policy.maxExec)} floor={pct(RUN.policy.minMarginBps)} offers={SNAPSHOT.offers.length} tried={tried} spend={usdCents(ECON.spendCents)} net={realized} />
+
+<section class="ls-band"><div class="lp-wrap">
+<h2 class="ls-h">One run, start to finish.</h2>
+<p>A {units}-unit lot, settled in mUSDG, a test token, on Robinhood Chain testnet. Net {realized}.</p>
+<a class="btn lg" href="/show">Watch AI trade</a>
+</div></section>
+
+</main>
+
+<SiteFooter />
+</Base>

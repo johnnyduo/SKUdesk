@@ -1,0 +1,109 @@
+{
+ "chainId": 46630,
+ "entryPoint": "0x0000000071727De22E5E9d8BAf0edAc6f37da032",
+ "factory": "0xeA8407948e8BE12Ea2365d1BEdBADf364aadaaE0",
+ "registry": "0x8004A818BFB912233c491871b3d84c89A494BD9e",
+ "token": "0x0B71c1B397A9d33198e0A6a5701E12011AC84D95",
+ "ranAt": "2026-10-03T15:44:35.779Z",
+ "owner": "0x6129C88CE91ACdf5c1E42188B1aF88C2166a5501",
+ "agentKey": "0x3A1f1630B1f1ad983c98CF2A460e9D5DA42bC36B",
+ "steps": [],
+ "ops": [
+  {
+   "label": "Agent claims net 390c (true value 261c)",
+   "via": "account -> vault",
+   "tx": "0x7e6eb0709392bf5c27c29bcb6c592e38603e544f71b4bcdccb1236b72a29f162",
+   "accepted": true,
+   "executed": false,
+   "refusedBy": "vault",
+   "error": "MathMismatch",
+   "args": "390, 261, 2374, 2374",
+   "gas": "371886"
+  },
+  {
+   "label": "Agent tries a 400-unit trade (cap is $2,500)",
+   "via": "account -> vault",
+   "tx": "0xf3c4cbdf9320e1e99704b1abc4591fc2cf211509a0bac7fbd1d4a01c18280be7",
+   "accepted": true,
+   "executed": false,
+   "refusedBy": "vault",
+   "error": "SpendCap",
+   "args": "263600, 250000",
+   "gas": "348302"
+  },
+  {
+   "label": "Honest commit: 240 units, net $2.61/unit",
+   "via": "account -> vault",
+   "tx": "0x5c040500bc0e4cdcfc3b25f0db38d2dd690eca8e028662111d45758bcd241a4e",
+   "accepted": true,
+   "executed": true,
+   "spendCents": "158160",
+   "gas": "492091"
+  }
+ ],
+ "attacks": [
+  {
+   "label": "Call the token contract directly to send tokens to a stranger",
+   "refusedBy": "account (validation)",
+   "code": "AA23",
+   "error": "TargetNotAllowed",
+   "args": "0x0B71c1B397A9d33198e0A6a5701E12011AC84D95"
+  },
+  {
+   "label": "Withdraw the vault balance (owner-only function)",
+   "refusedBy": "account (validation)",
+   "code": "AA23",
+   "error": "SelectorNotAllowed",
+   "args": "0x2e1a7d4d"
+  },
+  {
+   "label": "Pause the vault (owner-only function)",
+   "refusedBy": "account (validation)",
+   "code": "AA23",
+   "error": "SelectorNotAllowed",
+   "args": "0x02329a29"
+  },
+  {
+   "label": "Send 1 wei of ETH to the vault with the call",
+   "refusedBy": "account (validation)",
+   "code": "AA23",
+   "error": "ValueNotAllowed",
+   "args": "1"
+  },
+  {
+   "label": "Pay itself a 1 gwei tip as its own bundler (draining the gas deposit)",
+   "refusedBy": "account (validation)",
+   "code": "AA23",
+   "error": "TipNotAllowed",
+   "args": "1000000000"
+  },
+  {
+   "label": "Ask for 5,000,000 verification gas (draining the gas deposit)",
+   "refusedBy": "account (validation)",
+   "code": "AA23",
+   "error": "GasTooHigh",
+   "args": "5000000, 2000000, 100000"
+  },
+  {
+   "label": "UserOp signed by a stranger instead of the agent key",
+   "refusedBy": "account (validation)",
+   "code": "AA24",
+   "error": "AA24 signature error"
+  }
+ ],
+ "vault": "0x9204523A99432374B7C6f08587e53bea4B8eA3bf",
+ "account": "0xa123b77853fB3A2B621c57E5AC6dd8A3b6254f61",
+ "agentId": "128",
+ "createTx": "0x3c271080e364cd90d48a0ecdc7ffb812ebb5353d5a9fa26bf9435f668383ad06",
+ "createGas": "4176840",
+ "deployBlock": "128231762",
+ "wiring": {
+  "vaultOwner": true,
+  "vaultAgentIsAccount": true,
+  "accountSigner": true,
+  "accountVault": true,
+  "nftOwner": true,
+  "vaultInIdentity": true
+ },
+ "vaultUntouchedByAttacks": true
+}

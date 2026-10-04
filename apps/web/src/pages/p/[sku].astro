@@ -1,0 +1,50 @@
+---
+// Per-SKU landing page used as the Google Merchant `link`. Price, availability and image must match the listing.
+import Base from '../../layouts/Base.astro';
+import { CATALOG } from '../../lib/engine';
+import { BRAND, SITE_ORIGIN, STORE_POLICY, fmtPrice, manifestEntry } from '../../lib/listing';
+export function getStaticPaths() {
+  return CATALOG.products.map((p) => ({ params: { sku: p.id }, props: { product: p } }));
+}
+const { product } = Astro.props;
+const e = manifestEntry(product);
+const canonical = SITE_ORIGIN + e.path;
+const jsonLd = JSON.stringify({
+  '@context': 'https://schema.org', '@type': 'Product', name: e.title, sku: e.sku, brand: { '@type': 'Brand', name: BRAND },
+  image: SITE_ORIGIN + e.imagePath, ...(e.gtin ? { gtin: e.gtin } : {}),
+  offers: { '@type': 'Offer', url: canonical, priceCurrency: 'USD', price: (e.priceCents / 100).toFixed(2), availability: 'https://schema.org/InStock', itemCondition: 'https://schema.org/NewCondition' },
+});
+---
+<Base title={`${e.title} — ${BRAND}`} canonicalPath={e.path} description={`${e.title}: ${fmtPrice(e.priceCents)} USD, new, in stock. A product page for SKUdesk, the AI price hunter on Robinhood Chain.`}>
+<script slot="head" type="application/ld+json" set:html={jsonLd}></script>
+<main id="main" class="container product-page">
+<nav class="crumb mono sm" aria-label="Breadcrumb"><a href="/">SKUdesk</a> <span class="muted">/ product / {e.sku}</span></nav>
+<div class="grid2 start">
+<figure class="card product-figure"><img src={e.imagePath} alt={e.title} width="1000" height="1000" loading="eager" decoding="async"/></figure>
+<section class="card">
+<h1>{e.title}</h1>
+<p class="product-price mono" data-price-cents={e.priceCents}>{fmtPrice(e.priceCents)} <span class="muted sm">USD</span></p>
+<div class="pills"><span class="pill ok">In stock</span><span class="pill">Condition: New</span></div>
+<table class="mono kv"><tbody>
+<tr><td>Brand</td><td>{BRAND}</td></tr>
+<tr><td>SKU</td><td>{e.sku}</td></tr>
+<tr><td>Fits</td><td>{e.compat}</td></tr>
+<tr><td>Colour</td><td>{e.color}</td></tr>
+<tr><td>MagSafe</td><td>{e.magSafe ? 'Yes' : 'No'}</td></tr>
+<tr><td>Pack</td><td>{e.pack}</td></tr>
+{e.gtin && <tr><td>GTIN</td><td>{e.gtin}</td></tr>}
+</tbody></table>
+<h2 class="h-sub">Store policies</h2>
+{STORE_POLICY.returnsUrl ? <p><a href={STORE_POLICY.returnsUrl}>Return policy</a></p> : <p class="note">Return policy: not configured yet.</p>}
+{STORE_POLICY.contactEmail ? <p>Contact: <a href={`mailto:${STORE_POLICY.contactEmail}`}>{STORE_POLICY.contactEmail}</a></p> : <p class="note">Contact: not configured yet.</p>}
+</section>
+</div>
+</main>
+</Base>
+<style>
+.product-page{display:grid;gap:var(--gutter);padding-block:var(--s8)}
+.product-figure{margin:0;align-items:center;justify-content:center;background:#fff}
+.product-figure img{width:100%;max-width:420px;height:auto}
+.product-page h1{font-size:var(--fs-2xl);line-height:1.2}
+.product-price{font-size:var(--fs-2xl);font-weight:700}
+</style>

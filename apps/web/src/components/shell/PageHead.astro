@@ -1,0 +1,5 @@
+---
+// One page title per page (h1) + optional subtitle; the "badge" slot holds status pills beside the title.
+const { title, sub, serif = false, mono = false, monoSub = false } = Astro.props;
+---
+<header class="page-head"><h1 class:list={[{ serif, mono }]}>{title}<slot name="badge"/></h1>{sub && <p class:list={['page-sub', { mono: monoSub }]}>{sub}</p>}</header>

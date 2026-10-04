@@ -1,0 +1,4 @@
+{"version":1,"origin":"https://robinize.agent-dong.workers.dev","entries":[
+{"sku":"CASE-IP16PRO-CLEAR-MAG-001","path":"/p/CASE-IP16PRO-CLEAR-MAG-001/","imagePath":"/img/cases-png/iphone-16-pro_clear_mag_1.png","title":"iPhone 16 Pro Clear MagSafe Case","brand":"Robinize","gtin":null,"priceCents":1099,"currency":"USD","availability":"IN_STOCK","compat":"iPhone 16 Pro","color":"Clear","magSafe":true,"pack":1},
+{"sku":"SKU-TEST-GTIN","path":"/p/SKU-TEST-GTIN/","imagePath":"/img/cases-png/iphone-16-pro_black_mag_1.png","title":"iPhone 16 Pro Black MagSafe Case","brand":"Robinize","gtin":"036000291452","priceCents":1099,"currency":"USD","availability":"IN_STOCK","compat":"iPhone 16 Pro","color":"Black","magSafe":true,"pack":1}
+]}

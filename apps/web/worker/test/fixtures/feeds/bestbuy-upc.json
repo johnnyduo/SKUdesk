@@ -1,0 +1,5 @@
+{"from":1,"to":3,"total":3,"currentPage":1,"totalPages":1,"queryTime":"0.004","totalTime":"0.010","partial":false,"canonicalUrl":"/v1/products(upc=\"036000291452\")?show=sku,name,salePrice,regularPrice,upc,url,image,onlineAvailability,condition,shippingCost&format=json&apiKey=REDACTED","products":[
+{"sku":6501234,"name":"Insignia - Clear MagSafe Case for iPhone 16 Pro","salePrice":10.99,"regularPrice":19.99,"upc":"036000291452","url":"https://api.bestbuy.com/click/-/6501234/pdp","image":"https://pisces.bbystatic.com/image2/BestBuy_US/images/products/6501/6501234_sd.jpg","onlineAvailability":true,"condition":"New","shippingCost":0},
+{"sku":6501235,"name":"Insignia - Clear MagSafe Case for iPhone 16 Pro (Open-Box)","salePrice":7.49,"regularPrice":19.99,"upc":"036000291452","url":"https://api.bestbuy.com/click/-/6501235/pdp","image":null,"onlineAvailability":true,"condition":"Pre-Owned","shippingCost":""},
+{"sku":6501236,"name":"Insignia - Clear Case for iPhone 16 Pro","salePrice":9.99,"regularPrice":9.99,"upc":"036000291452","url":"https://api.bestbuy.com/click/-/6501236/pdp","onlineAvailability":false,"condition":"New","shippingCost":0}
+]}

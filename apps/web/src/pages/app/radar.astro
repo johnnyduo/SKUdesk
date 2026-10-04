@@ -1,0 +1,109 @@
+---
+import Base from '../../layouts/Base.astro';
+import Shell from '../../components/shell/Shell.astro';
+import PageHead from '../../components/shell/PageHead.astro';
+import RadarSweep from '../../components/commerce/RadarSweep.tsx';
+import Ladder from '../../components/commerce/Ladder.tsx';
+import PriceCompare from '../../components/commerce/PriceCompare.tsx';
+import { PRODUCT_ID } from '../../components/commerce/market';
+import '../../components/commerce/market.css';
+import { RUN, SNAPSHOT, ECON, usdCents, pct, short } from '../../lib/run';
+import { ROWS, BUY_ROW, SELL_ROW, LOCKED_COUNT, REJECTED_COUNT, TRAPS, GROSS_SPREAD_CENTS, SNAPSHOT_HASH_OK, RUN_GATE_AGREES, GATE_GLOSS, bySavings, fmtCaptured, PRODUCT_NAME } from '../../components/commerce/market';
+const traps = [...TRAPS].sort(bySavings);
+const decoyTraps = traps.filter((t) => t.row.side === 'supply');
+const demandTraps = traps.filter((t) => t.row.side === 'demand');
+const cheapest = [...ROWS].sort((a, b) => a.priceCents - b.priceCents)[0];
+---
+<Base title="Market snapshot | SKUdesk" description="A fixed snapshot of offers for the same product across marketplaces. Each offer must pass the identity checks before it counts toward a price."><Shell>
+<PageHead title="Market snapshot" sub={`${ROWS.length} offers captured ${fmtCaptured(SNAPSHOT.capturedAt)}. Fixed snapshot, not a live feed.`}/>
+
+<section class="mk-what" aria-labelledby="what-h">
+  <h2 id="what-h">What you are looking at</h2>
+  <p>This is the list of prices the agent was shown before it chose a trade. Ten listings for phone cases, and only <b>{LOCKED_COUNT}</b> are really the product the owner wants: <b>{PRODUCT_NAME}</b>. Before any money moves, an <b><span class="mk-gloss" title="Identity gate: a rule-based check that two listings are the exact same product. Plain TypeScript, not an AI guess.">identity gate</span></b> compares each listing with that exact product, and the <b>{REJECTED_COUNT}</b> look-alikes (wrong phone model, 2-pack, no magnet) are rejected even though some are much cheaper.</p>
+  <p>The agent picked {BUY_ROW.id} to buy at {usdCents(BUY_ROW.priceCents)} and {SELL_ROW.id} to sell at {usdCents(SELL_ROW.priceCents)}. The fingerprint of this exact list (a <span class="mk-gloss" title="Hash: a short fingerprint of data. Change one character of the data and the fingerprint changes completely.">hash</span>) was written to the blockchain with the trade, so the list cannot be quietly edited afterwards.</p>
+</section>
+
+<section class="mk-facts" aria-label="Snapshot facts">
+  <div><small>Captured</small><b>{fmtCaptured(SNAPSHOT.capturedAt).slice(0, 10)}</b><span>{fmtCaptured(SNAPSHOT.capturedAt).slice(11)}</span></div>
+  <div><small>Source</small><b>Fixed snapshot</b><span>Offers saved once before the run; not a live feed</span></div>
+  <div><small>Offers</small><b>{ROWS.length}</b><span>{LOCKED_COUNT} locked · {REJECTED_COUNT} rejected</span></div>
+  <div><small>Chosen pair</small><b>{usdCents(GROSS_SPREAD_CENTS)} / unit</b><span>gross spread after landed cost, {RUN.accepted.units} units</span></div>
+</section>
+
+<div class="mk-hash">
+  <div><span class="muted">snapshotHash committed on-chain with the trade</span></div>
+  <code>{RUN.meta.snapshotHash}</code>
+  {SNAPSHOT_HASH_OK
+    ? <div class="mk-ok">✓ Re-hashing data/snapshot.json when this page was built gives exactly this value ({short(RUN.meta.snapshotHash, 8, 6)}).</div>
+    : <div class="mk-bad">✕ Re-hashing the snapshot file does not match the committed hash.</div>}
+</div>
+
+<section class="card" aria-labelledby="ladder-h">
+  <h2 id="ladder-h" class="mk-h">Where the prices sit</h2>
+  <p class="mk-sub">Every listing on one ladder. Bars show how many units are in stock. Hatched, struck-through rows are listings the identity gates rejected. The chosen buy and sell listings are outlined; the dashed band is the spread between them.</p>
+  <Ladder />
+</section>
+
+<section class="card" aria-labelledby="gates-h">
+  <h2 id="gates-h" class="mk-h">Identity-gate verdict for every offer</h2>
+  <p class="mk-sub">Six checks per listing (<span class="mk-code">model</span>, <span class="mk-code">pack</span>, <span class="mk-code">magsafe</span>, <span class="mk-code">gtin</span> barcode, <span class="mk-code">color</span> and an informational <span class="mk-code">brand</span>). A single failed hard gate rejects the listing. Hover a gate chip for expected versus observed. These verdicts come from calling <span class="mk-code">matchOffer</span> in <span class="mk-code">packages/matching</span> against the canonical product when this page was built; the list below only reveals them and computes nothing.{RUN_GATE_AGREES ? ' For the two listings the agent chose, they agree with the verdicts from the run.' : ''}</p>
+  <RadarSweep client:idle rows={ROWS} groups={true} />
+  <p class="note">The snapshot has no explicit buy or sell side. Listings that charge shipping are treated as supply the agent can buy from, and free-shipping retail listings as demand it can sell into.</p>
+</section>
+
+<section class="card" aria-labelledby="trap-h">
+  <h2 id="trap-h" class="mk-h">Why the cheap decoys are traps</h2>
+  <p class="mk-sub">The cheapest listing in the snapshot is {cheapest.id} at {usdCents(cheapest.priceCents)}, against {usdCents(BUY_ROW.priceCents)} for the supplier the agent chose. A system that only compared prices would have taken it. Each decoy below is tempting on price and wrong on the product, and the gate says exactly where.</p>
+  <div class="mk-traps">
+    {decoyTraps.map((t) => (
+      <article class="mk-trap">
+        {t.row.image ? <span class="thumb" style="width:56px;height:56px"><img src={t.row.image} alt="" width="56" height="56" loading="lazy" decoding="async"/></span> : <span class="mk-thumb-tile" style="width:56px;height:56px" aria-hidden="true">{t.row.device.replace('iPhone ', '')}</span>}
+        <div>
+          <h3>{t.row.title}</h3>
+          <div class="mono xs muted">{t.row.id} · {t.row.seller} · {usdCents(t.row.priceCents)} + {usdCents(t.row.shipCents)} ship</div>
+          <div class="gap">{t.gapText}</div>
+          <p class="ev"><span class="mk-chip rejected">REJECTED</span> {t.row.failing.map((g) => `${g.label}: expected ${g.expected}, observed ${g.observed}`).join(' · ')}</p>
+          {t.row.failing[0] && <p class="gl">{GATE_GLOSS[t.row.failing[0].gate]}</p>}
+        </div>
+      </article>
+    ))}
+  </div>
+  <p class="mk-sub">The same trick works on the selling side: wrong-model listings pay more than the chosen sale price, and they are rejected too.</p>
+  <div class="mk-traps">
+    {demandTraps.map((t) => (
+      <article class="mk-trap">
+        {t.row.image ? <span class="thumb" style="width:56px;height:56px"><img src={t.row.image} alt="" width="56" height="56" loading="lazy" decoding="async"/></span> : <span class="mk-thumb-tile" style="width:56px;height:56px" aria-hidden="true">{t.row.device.replace('iPhone ', '')}</span>}
+        <div>
+          <h3>{t.row.title}</h3>
+          <div class="mono xs muted">{t.row.id} · {t.row.seller} · {usdCents(t.row.priceCents)}</div>
+          <div class="gap">{t.gapText}</div>
+          <p class="ev"><span class="mk-chip rejected">REJECTED</span> {t.row.failing.map((g) => `${g.label}: expected ${g.expected}, observed ${g.observed}`).join(' · ')}</p>
+          {t.row.failing[0] && <p class="gl">{GATE_GLOSS[t.row.failing[0].gate]}</p>}
+        </div>
+      </article>
+    ))}
+  </div>
+  <p class="note">Identity is checked off-chain by these gates. The contract only sees a hash of the product and re-derives the economics, so the pitch is: the contract enforces the budget and the math, the gates enforce the product match.</p>
+</section>
+
+<section class="card" aria-labelledby="pick-h">
+  <h2 id="pick-h" class="mk-h">The chosen pair</h2>
+  <div class="mk-spread">
+    <div class="mk-leg buy">
+      {BUY_ROW.image && <span class="thumb lg" style="width:72px;height:72px"><img src={BUY_ROW.image} alt="" width="72" height="72" decoding="async"/></span>}
+      <div><small>Buy · {BUY_ROW.id}</small><b>{usdCents(BUY_ROW.priceCents)}</b><span>+ {usdCents(BUY_ROW.shipCents)} shipping · {BUY_ROW.seller} · landed {usdCents(ECON.landedCents)} with duty, tax and fees</span></div>
+    </div>
+    <div class="mk-mid"><small>gross spread</small><b>{usdCents(GROSS_SPREAD_CENTS)}</b><i aria-hidden="true">→</i><small>net {usdCents(ECON.netCents)} · {pct(ECON.marginBps)}</small></div>
+    <div class="mk-leg sell">
+      {SELL_ROW.image && <span class="thumb lg" style="width:72px;height:72px"><img src={SELL_ROW.image} alt="" width="72" height="72" decoding="async"/></span>}
+      <div><small>Sell · {SELL_ROW.id}</small><b>{usdCents(SELL_ROW.priceCents)}</b><span>{SELL_ROW.seller} · free shipping · stock {SELL_ROW.stock.toLocaleString('en-US')}</span></div>
+    </div>
+  </div>
+  <p class="mk-sub">Gross spread is the sell price minus the landed cost of {usdCents(ECON.landedCents)}. After marketplace fee, fulfilment, return reserve and on-chain cost the net is {usdCents(ECON.netCents)} per unit, {pct(ECON.marginBps)} of the sell price. The full arithmetic is on <a class="mk-link" href="/app/opportunities/">Opportunities</a>.</p>
+</section>
+<section class="card" aria-labelledby="pc-h">
+<h2 id="pc-h">Live cross-source price check <span class="pill blue">/api</span></h2>
+<p class="note">Separate from the market snapshot above: this asks the site's /api now, and labels every source REAL or TEST DATA.</p>
+<PriceCompare client:visible sku={PRODUCT_ID}/>
+</section>
+</Shell></Base>

@@ -1,0 +1,81 @@
+---
+import { RUN, SNAPSHOT, ECON, LOT_STEPS, REALIZED_CENTS, SPEND_CENTS, PROCEEDS, CHAIN, usdCents, usdBase, pct, explorer, short } from '../../../lib/run';
+export function getStaticPaths() {
+  return [{ params: { id: String(RUN.meta.lot) } }];
+}
+import Base from '../../../layouts/Base.astro';
+import Shell from '../../../components/shell/Shell.astro';
+import PageHead from '../../../components/shell/PageHead.astro';
+import Explain from '../../../components/shell/Explain.astro';
+import LiveLot from '../../../components/shell/LiveLot.tsx';
+import Provenance from '../../../components/ui/Provenance.astro';
+import PublishListing from '../../../components/commerce/PublishListing.tsx';
+import { CATALOG } from '../../../lib/engine';
+import { BY_CONSTRUCTION } from '../../../lib/money';
+import { BRAND, SITE_ORIGIN, manifestEntry } from '../../../lib/listing';
+const heroEntry = manifestEntry(CATALOG.hero);
+
+const lot = RUN.meta.lot;
+const buy = SNAPSHOT.offers.find((o) => o.id === RUN.accepted.buyOfferId);
+const sell = SNAPSHOT.offers.find((o) => o.id === RUN.accepted.sellOfferId);
+const proceeds = Number(RUN.end.totalProceeds) / 1e4;
+const paid = Number(RUN.end.totalPaidOut) / 1e4;
+const gasTotal = LOT_STEPS.reduce((s, x) => s + Number(x.tx.tx.gasUsed), 0);
+---
+<Base title={`Lot #${lot} | SKUdesk`} description={`Lot #${lot}: ${ECON.units} units of ${buy?.title ?? 'the product'}, from purchase to payout, settled in test tokens on Robinhood Chain Testnet.`}><Shell>
+<PageHead title={`Lot #${lot}`} sub={`${ECON.units} units of ${CATALOG.hero.model}`}>
+<span slot="badge" class="pill good">{LOT_STEPS[LOT_STEPS.length - 1]?.state} in the run</span>
+</PageHead>
+
+<Explain>
+This lot is one purchase, followed from the moment the contract accepted the deal to the moment profit was measured. Each step below is a real transaction on the test network, with test tokens only. No goods moved. The <b>escrow</b> (money locked for this one purchase) can only ever go to the supplier the owner approved. Steps tagged <b>agent attested</b> are real-world events the contract cannot see, so it takes the agent's word for them.
+</Explain>
+
+<div class="grid2 grid-7-5 start">
+<section class="card" aria-labelledby="tl-h">
+<h2 id="tl-h">Life cycle <Provenance kind="onchain" note="saved from the run" /></h2>
+<ol class="ov-tl">
+{LOT_STEPS.map((s, i) => (
+<li>
+<span class="ov-node" aria-hidden="true">{i + 1}</span>
+<div class="ov-tlb">
+<div class="row"><span class={'pill ' + (s.attested ? 'warn' : 'blue')}>{s.state}</span><span class="mono xs muted">{s.fn}</span>{s.attested && <Provenance kind="agent" />}</div>
+<p>{s.plain}</p>
+<p class="xs muted mono">block {s.tx.tx.block.toLocaleString('en-US')} · gas {Number(s.tx.tx.gasUsed).toLocaleString('en-US')} · <a class="ov-tx" href={explorer.tx(s.tx.tx.hash)} target="_blank" rel="noopener noreferrer">{short(s.tx.tx.hash, 8, 6)} ↗<span class="sr-only"> (opens the block explorer in a new tab)</span></a></p>
+</div>
+</li>
+))}
+</ol>
+</section>
+
+<div class="col">
+<LiveLot client:load id={lot}/>
+
+<section class="card" aria-labelledby="gm-h">
+<h2 id="gm-h">Google Merchant listing <span class="pill blue">/api</span> <Provenance kind="snapshot" note="catalog price" /></h2>
+<PublishListing client:load lotId={'LOT-' + lot} title={heroEntry.title} link={SITE_ORIGIN + heroEntry.path} imageLink={SITE_ORIGIN + heroEntry.imagePath} priceCents={heroEntry.priceCents} brand={BRAND} gtin={heroEntry.gtin}/>
+</section>
+
+<section class="card" aria-labelledby="money-h">
+<h2 id="money-h">Where the money went <Provenance kind="onchain" note="token amounts saved from the run" /></h2>
+<dl class="ov-kv">
+<div><dt>Escrowed for this lot<small>{usdCents(ECON.landedCents)} landed cost × {ECON.units} units, derived by the contract.</small></dt><dd class="mono">{usdCents(SPEND_CENTS)}</dd></div>
+<div><dt>Paid to the supplier<small>Released from escrow to the approved address.</small></dt><dd class="mono">{usdBase(RUN.end.totalPaidOut)}</dd></div>
+<div><dt>Sale proceeds received<small>Tokens pulled from the approved payer at settlement. {PROCEEDS.sentence}</small></dt><dd class="mono">{usdCents(proceeds)}</dd></div>
+<div class="total"><dt>Profit at settlement<small>{usdCents(proceeds)} − {usdCents(paid)}</small></dt><dd class="mono neon">+{usdCents(REALIZED_CENTS)}</dd></div>
+</dl>
+<p class="ov-gl">Margin was {pct(ECON.marginBps)} ({usdCents(ECON.netCents)} net on a {usdCents(sell?.priceCents ?? 0)} sale per unit).</p>
+<p class="ov-gl">{BY_CONSTRUCTION}</p>
+</section>
+
+<section class="card" aria-labelledby="ids-h">
+<h2 id="ids-h">Fingerprints</h2>
+<dl class="ov-kv ov-ids">
+<div><dt>Opportunity hash<small>Derived on-chain from product, quote and snapshot.</small></dt><dd class="mono">{short(RUN.meta.oppHash, 10, 8)}</dd></div>
+<div><dt>Snapshot hash <Provenance kind="agent" /><small>Fingerprint of the prices the agent saw, supplied by the agent.</small></dt><dd class="mono">{short(RUN.meta.snapshotHash, 10, 8)}</dd></div>
+<div><dt>Gas across these steps</dt><dd class="mono">{gasTotal.toLocaleString('en-US')}</dd></div>
+</dl>
+</section>
+</div>
+</div>
+</Shell></Base>

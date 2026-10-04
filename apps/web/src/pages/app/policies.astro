@@ -1,0 +1,64 @@
+---
+import Base from '../../layouts/Base.astro';
+import Shell from '../../components/shell/Shell.astro';
+import PageHead from '../../components/shell/PageHead.astro';
+import Provenance from '../../components/ui/Provenance.astro';
+import Mandate from '../../components/guard/Mandate.tsx';
+import Simulator from '../../components/guard/Simulator.tsx';
+import '../../components/guard/guard.css';
+import { RUN, GUARDS, FAILED_TX, explorer, usdCents, CHAIN } from '../../lib/run';
+import { pctClean } from '../../components/guard/lib';
+
+const attackBy = Object.fromEntries(RUN.attacks.map((a) => [a.error, a]));
+const demoCount = GUARDS.filter((g) => g.demonstrated).length;
+const P = RUN.policy;
+---
+<Base title="Mandate and guardrails | SKUdesk" description="The rules the vault enforces on the AI agent: spend caps, minimum margin and quote age. Read the live mandate, then try to break it against the deployed contract."><Shell>
+<PageHead title="Mandate and guardrails" sub="The rules the vault enforces on the AI agent, and a way to try to break them."/>
+
+<section class="gd-intro" aria-labelledby="wyla">
+  <h2 id="wyla">What you are looking at</h2>
+  <p>The owner gave the agent a mandate: spend at most <b>{usdCents(P.maxExec)}</b> on one purchase and <b>{usdCents(P.dailySpendCap)}</b> of new commitments per UTC day, only accept trades that keep at least <b>{pctClean(P.minMarginBps)}</b> margin, and only accept quotes the agent dates as less than <b>{P.quoteTTL} seconds</b> old. A smart contract on {CHAIN.name} enforces it, so the agent cannot talk its way past it. The daily cap limits new commitments, not cash-out: commitments do not expire, so ones made on earlier days can be funded later, and across a midnight up to twice the cap can be committed within 24 hours. Cash-out is bounded by the vault’s free balance, and each purchase by the per-purchase cap.</p>
+  <p class="gd-gloss">Margin is profit as a share of the sell price. A revert means the contract refuses the transaction and undoes it. Below you can read the live mandate, then play the agent and try to cheat the real contract.</p>
+</section>
+
+<Mandate client:load />
+
+<section class="gd-section" aria-labelledby="sim-h">
+  <h2 id="sim-h">Try to cheat the agent <Provenance kind="onchain" note="read-only calls" /> <small>every answer comes from the deployed contract</small></h2>
+  <p class="gd-lede">Pick a preset or change the numbers. Each change is sent to the real contract as a read-only test call, made as the agent’s public address. It tells you whether the contract would accept the commit and, if not, which rule stopped it and why. Nothing is broadcast and no money moves.</p>
+  <Simulator client:load />
+</section>
+
+<section class="gd-section" aria-labelledby="guards-h">
+  <h2 id="guards-h">The guard catalogue <small>{GUARDS.length} rules, in the contract</small> <Provenance kind="snapshot" note="“triggered” marks are from the run" /></h2>
+  <p class="gd-lede">Each rule has an error name (what the contract throws), a plain explanation and the Foundry test that proves it. {demoCount} of the {GUARDS.length} were also triggered in the run on the real chain; the rest are proved by the test suite. Only the product-identity check, whether a listing is really the same item, lives off-chain: the contract sees only a hash of it.</p>
+  <div class="gd-guards">
+    {GUARDS.map((g, i) => {
+      const a = attackBy[g.error];
+      return (
+        <article class:list={['gd-guard', { demo: g.demonstrated }]}>
+          <h3><span class="n">{String(i + 1).padStart(2, '0')}</span>{g.rule}</h3>
+          <span class="gd-err">{g.error}</span>
+          <p>{g.plain}</p>
+          <span class="gd-test">Proved by {g.test}</span>
+          {g.demonstrated && a ? (
+            <div class="gd-demo">
+              <b>Triggered in the run</b>
+              <span>{a.sentence}</span>
+              {g.error === 'MathMismatch' && FAILED_TX && explorer.tx(FAILED_TX.tx.hash) ? (
+                <span>The reverted transaction is on the chain: <a class="gd-link" href={explorer.tx(FAILED_TX.tx.hash)} target="_blank" rel="noopener noreferrer">view the failed tx<span class="sr-only"> (opens the block explorer)</span> ↗</a></span>
+              ) : (
+                <span class="muted">Decoded from a read-only call as the agent address, not a mined transaction.</span>
+              )}
+            </div>
+          ) : (
+            <span class="pill">Covered by tests, not triggered in the run</span>
+          )}
+        </article>
+      );
+    })}
+  </div>
+  <p class="gd-note">The vault’s Foundry tests are in <span class="mono">packages/contracts/test</span>; run <span class="mono">forge test</span> in <span class="mono">packages/contracts</span> to run them. They include fuzz tests, which try random inputs, and invariant tests that check value is never created or lost: tokens held always cover free funds plus escrow, and free plus escrow plus paid out equals deposits plus proceeds.</p>
+</section>
+</Shell></Base>

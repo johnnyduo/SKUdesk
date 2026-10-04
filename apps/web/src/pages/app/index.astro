@@ -1,0 +1,97 @@
+---
+import Base from '../../layouts/Base.astro';
+import Shell from '../../components/shell/Shell.astro';
+import PageHead from '../../components/shell/PageHead.astro';
+import Explain from '../../components/shell/Explain.astro';
+import LiveVault from '../../components/shell/LiveVault.tsx';
+import LiveMandate from '../../components/shell/LiveMandate.tsx';
+import Provenance from '../../components/ui/Provenance.astro';
+import { JOURNEY } from '../../lib/journey';
+import { RUN, ECON, TXS, SNAPSHOT, REALIZED_CENTS, VERIFIED_NET_CENTS, SPEND_CENTS, CHAIN, usdCents, pct, explorer, short } from '../../lib/run';
+
+const match = REALIZED_CENTS === VERIFIED_NET_CENTS;
+const proceedsC = Number(RUN.end.totalProceeds) / 1e4;
+const paidC = Number(RUN.end.totalPaidOut) / 1e4;
+const recent = RUN.events.filter((e) => e.kind !== 'reason' && !(e.kind === 'agent' && !e.data?.proposal)).slice(-8).reverse();
+const kindLabel: Record<string, string> = { policy: 'Mandate', snapshot: 'Snapshot', agent: 'Agent', gate: 'Gate', econ: 'Economics', tx: 'Transaction', revert: 'Refused', state: 'Vault' };
+const txBy = (starts: string) => TXS.find((e) => e.title.startsWith(starts))!.tx.hash;
+const commitTx = txBy('commitOpportunity'), fundTx = txBy('fundLot'), settleTx = txBy('settle'), refusedTx = txBy('Failed tx');
+const ex = (h: string) => explorer.tx(h);
+const sellC = SNAPSHOT.offers.find((o) => o.id === RUN.accepted.sellOfferId)!.priceCents;
+const feesC = sellC - ECON.landedCents - ECON.netCents;
+const t = (ms: number) => '+' + (ms / 1000).toFixed(1) + 's';
+---
+<Base title="Overview | SKUdesk" description="An overview of one run of an AI agent working under an on-chain budget on Robinhood Chain Testnet: the trade, the limits it kept and the result, settled in test tokens."><Shell>
+<PageHead title="Overview" sub={`One run of an AI agent working under an on-chain budget, on ${CHAIN.name}.`}/>
+
+<Explain>
+An AI agent was hired with a budget it cannot exceed. It found a deal on a lot of iPhone 16 Pro clear cases (phone cases, not phones), a smart contract <b>re-checked the agent's arithmetic itself</b>, refused {RUN.attacks.length} requests it must not accept, and the deal closed with a profit of <b>{usdCents(REALIZED_CENTS)}</b>. The vault and mandate below are read live from the chain; the run itself is {TXS.length} real transactions, each linked to the public explorer.
+</Explain>
+
+<section class="card hub" aria-labelledby="hub-h" data-testid="start-here">
+<h2 id="hub-h">Start here: the story in six steps</h2>
+<ol class="hub-steps">
+{JOURNEY.map((j) => (
+<li class:list={[{ here: j.n === 1 }, { first: j.n === 1 }]}>
+<a href={j.href} aria-current={j.n === 1 ? 'step' : undefined}><span class="hub-n" aria-hidden="true">{j.n}</span><b>{j.label}</b><span class="hub-b">{j.blurb}</span>{j.n === 1 && <em class="hub-here">You are here</em>}</a>
+</li>
+))}
+</ol>
+<a class="btn lg" href="/show/" data-testid="hub-start">Next: Agent trade <span aria-hidden="true">→</span></a>
+</section>
+
+<section class="card ov-hero" aria-labelledby="res-h">
+<h2 id="res-h">The result</h2>
+<p class="hl-lede"><b class="mono hl-big">{usdCents(REALIZED_CENTS)}</b> <span>profit, in test tokens, on {ECON.units} iPhone 16 Pro clear cases.</span></p>
+<p class="hl-case">Per case: <b>{usdCents(sellC)}</b> sale price − <b>{usdCents(ECON.landedCents)}</b> cost to buy and land − <b>{usdCents(feesC)}</b> fees = <b>{usdCents(ECON.netCents)}</b> profit.</p>
+<ol class="hl-steps">
+<li><div class="hl-h"><b>The contract did the math itself</b> <Provenance kind="onchain" /></div><p>It worked out {usdCents(VERIFIED_NET_CENTS)} profit before any money moved. When the agent claimed more, it refused.</p><div class="hl-l"><a class="hl-tx" href={ex(commitTx)} target="_blank" rel="noopener noreferrer">Accepted <span class="mono">{short(commitTx, 6, 4)}</span> ↗<span class="sr-only"> (opens the block explorer in a new tab)</span></a><a class="hl-tx" href={ex(refusedTx)} target="_blank" rel="noopener noreferrer">Refused <span class="mono">{short(refusedTx, 6, 4)}</span> ↗<span class="sr-only"> (opens the block explorer in a new tab)</span></a></div></li>
+<li><div class="hl-h"><b>Spending stayed under the limit</b> <Provenance kind="onchain" /></div><p>{usdCents(SPEND_CENTS)} spent. The limit per trade is {usdCents(RUN.policy.maxExec)}.</p><div class="hl-l"><a class="hl-tx" href={ex(fundTx)} target="_blank" rel="noopener noreferrer">Escrow <span class="mono">{short(fundTx, 6, 4)}</span> ↗<span class="sr-only"> (opens the block explorer in a new tab)</span></a></div></li>
+<li><div class="hl-h"><b>Money in minus money out</b> <Provenance kind="onchain" /> <Provenance kind="agent" /></div><p>{usdCents(proceedsC)} in − {usdCents(paidC)} out = {usdCents(REALIZED_CENTS)}.</p><div class="hl-l"><a class="hl-tx" href={ex(settleTx)} target="_blank" rel="noopener noreferrer">Settlement <span class="mono">{short(settleTx, 6, 4)}</span> ↗<span class="sr-only"> (opens the block explorer in a new tab)</span></a></div></li>
+</ol>
+{!match && <p class="ov-verdict bad"><span aria-hidden="true">✕</span> The settled amount and the contract’s net differ.</p>}
+<p class="hl-note">This is a test run. The sale is a fixed test listing and the money came from the owner’s test wallet, so the profit matches by design. No goods moved.</p>
+</section>
+
+<div class="grid2 grid-7-5 start">
+<LiveVault client:load/>
+<LiveMandate client:load/>
+</div>
+
+<div class="grid2 grid-7-5 start">
+<section class="card" aria-labelledby="act-h">
+<h2 id="act-h">Recent activity <span class="pill">last {recent.length} events of the run</span></h2>
+<ol class="ov-feed">
+{recent.map((e) => (
+<li class:list={[e.kind, { failed: e.tx?.status === 'reverted' }]}>
+<span class="mono xs muted ov-t">{t(e.at)}</span>
+<span class="pill ov-k">{kindLabel[e.kind] ?? e.kind}</span>
+<div class="ov-ft"><span>{e.title}</span>{e.detail && <small class="muted">{e.detail}</small>}{e.tx && <a class="ov-tx mono" href={explorer.tx(e.tx.hash)} target="_blank" rel="noopener noreferrer">{short(e.tx.hash, 8, 6)} ↗<span class="sr-only"> (opens the block explorer in a new tab)</span></a>}</div>
+</li>
+))}
+</ol>
+</section>
+<section class="card" aria-labelledby="go-h">
+<h2 id="go-h">Dig into the desk</h2>
+<ul class="ov-links">
+<li><a href="/app/agent/"><b>See how the agent works</b><span>Its reasoning, the checks it passes and what it cannot do.</span></a></li>
+<li><a href="/app/lots/"><b>Follow the lot</b><span>One purchase from commitment to settlement, step by step.</span></a></li>
+<li><a href="/app/transactions/"><b>Read the ledger</b><span>All {TXS.length} transactions with gas, status and explorer links.</span></a></li>
+</ul>
+</section>
+</div>
+</Shell></Base>
+<style>
+.hl-lede{display:flex;gap:var(--s4);align-items:center;flex-wrap:wrap;margin:0 0 var(--s3);font-size:var(--fs-lg);line-height:1.45}
+.hl-big{font-size:clamp(34px,6vw,56px);line-height:1;color:var(--green)}
+.hl-steps{list-style:none;margin:0 0 var(--s5);padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--s4)}
+.hl-steps li{display:grid;gap:var(--s2);align-content:start;padding:var(--s4);border:1px solid var(--line);border-radius:var(--r);background:var(--code)}
+.hl-h{display:flex;gap:var(--s2);align-items:center;flex-wrap:wrap;font-size:var(--fs-sm)}
+.hl-steps p{margin:0;font-size:var(--fs-sm);color:var(--mut)}
+.hl-case{margin:0 0 var(--s5);font-size:var(--fs-md);line-height:1.6}
+.hl-case b{font-family:var(--mono);color:var(--txt)}
+.hl-l{display:flex;flex-wrap:wrap;gap:var(--s2) var(--s4)}
+.hl-note{margin:0;font-size:var(--fs-sm);color:var(--mut);line-height:1.55}
+.hl-tx{font-size:var(--fs-sm);overflow-wrap:anywhere}
+@media(max-width:800px){.hl-steps{grid-template-columns:minmax(0,1fr)}}
+</style>

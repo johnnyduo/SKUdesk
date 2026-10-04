@@ -1,0 +1,118 @@
+---
+import Base from '../../layouts/Base.astro';
+import Shell from '../../components/shell/Shell.astro';
+import PageHead from '../../components/shell/PageHead.astro';
+import '../../components/guard/guard.css';
+import Provenance from '../../components/ui/Provenance.astro';
+import { RUN, TXS, ECON, SPEND_CENTS, SNAPSHOT, usdCents } from '../../lib/run';
+import { pctClean, secs } from '../../components/guard/lib';
+
+const evs = RUN.events;
+const fnOf = (e: (typeof TXS)[number]) => (e.tx.status === 'reverted' ? 'commitOpportunity' : (e.title.match(/^\w+/)?.[0] ?? e.title));
+const rows = TXS.map((e) => {
+  const prev = evs[evs.findIndex((x) => x.id === e.id) - 1];
+  return { id: e.id, fn: fnOf(e), failed: e.tx.status === 'reverted', gas: Number(e.tx.gasUsed), block: e.tx.block, gap: e.at - (prev?.at ?? 0), hash: e.tx.hash };
+});
+const totalGas = rows.reduce((s, r) => s + r.gas, 0);
+const maxGas = Math.max(...rows.map((r) => r.gas));
+const maxGap = Math.max(...rows.map((r) => r.gap));
+const ok = rows.filter((r) => !r.failed).length, failed = rows.length - ok;
+const gasOk = rows.filter((r) => !r.failed).reduce((s, r) => s + r.gas, 0), gasFail = totalGas - gasOk;
+const gapMin = Math.min(...rows.map((r) => r.gap)), gapMax = maxGap;
+const dur = RUN.meta.durationMs;
+const t0 = evs.find((e) => e.kind === 'agent' && e.title.startsWith('Agent thinking'));
+const t1 = evs.find((e) => e.kind === 'agent' && e.title === 'Agent proposal');
+const latency = t0 && t1 ? t1.at - t0.at : 0;
+const maxExec = Number(RUN.policy.maxExec), daily = Number(RUN.policy.dailySpendCap), floor = Number(RUN.policy.minMarginBps);
+const spendPct = (SPEND_CENTS / maxExec) * 100, dailyPct = (SPEND_CENTS / daily) * 100;
+const MSCALE = 3000; // margin gauge drawn from 0 to 30%
+const marginPct = Math.min(100, (ECON.marginBps / MSCALE) * 100), floorPct = (floor / MSCALE) * 100;
+const kindClass = (e: (typeof evs)[number]) => (e.tx ? (e.tx.status === 'reverted' ? 'fail' : 'tx') : e.kind);
+const spendAttack = RUN.attacks.find((a) => a.error === 'SpendCap');
+const sellCents = SNAPSHOT.offers.find((o) => o.id === RUN.accepted.sellOfferId)!.priceCents;
+const f = (n: number) => n.toLocaleString('en-US');
+---
+<Base title="Run metrics | SKUdesk" description="Measurements from the one run on Robinhood Chain Testnet. The figures come from the chain and the run itself, and nothing here is a projection."><Shell>
+<PageHead title="Run metrics" sub="Measurements from the one run on Robinhood Chain Testnet. Nothing here is a projection."/>
+
+<section class="gd-intro" aria-labelledby="wyla">
+  <h2 id="wyla">What you are looking at</h2>
+  <p>How the run behaved: it took {secs(dur)} end to end, sent {rows.length} transactions ({ok} succeeded, {failed} was refused by the contract) and used {f(totalGas)} units of gas in total. It spent {usdCents(SPEND_CENTS)} of its {usdCents(maxExec)} per-purchase allowance, at a {pctClean(ECON.marginBps)} margin against an {pctClean(floor)} floor.</p>
+  <p class="gd-gloss">Gas is the unit of computation a blockchain charges for: a bigger number means the contract did more work. Timestamps come from the run script’s own clock, in seconds since the run started.</p>
+</section>
+
+<div class="gd-tiles">
+  <div class="gd-tile"><small>Run duration</small><b>{secs(dur)}</b><span>First event to last event.</span></div>
+  <div class="gd-tile"><small>The AI agent answered in</small><b>{secs(latency)}</b><span>From the “Agent thinking” event to the proposal event; includes network time.</span></div>
+  <div class="gd-tile"><small>Transactions</small><b>{rows.length}</b><span>{ok} success, {failed} reverted (refused by the contract).</span></div>
+  <div class="gd-tile"><small>Total gas</small><b>{f(totalGas)}</b><span>{f(gasOk)} in successful transactions, {f(gasFail)} in the reverted one.</span></div>
+</div>
+
+<section class="card" aria-labelledby="gas-h">
+  <h2 id="gas-h">Gas used by each transaction <Provenance kind="onchain" note="saved from the run" /></h2>
+  <p class="gd-note">Each bar is one on-chain transaction in the order it was sent. The commit costs the most because the contract re-derives the economics and stores the opportunity; the three “mark” steps only change a lot’s state. The reverted transaction still used {f(gasFail)} gas: a refused call costs gas but moves no money.</p>
+  <div class="gd-bars" role="list" aria-label="Gas used per transaction">
+    {rows.map((r) => (
+      <div class:list={['gd-brow', { bad: r.failed }]} role="listitem">
+        <span class="lab"><span class="mono">{r.fn}</span><small>{r.failed ? 'reverted · ' : ''}block {f(r.block)}</small></span>
+        <span class="gd-track"><svg viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden="true"><rect x="0" y="0" width={(r.gas / maxGas) * 100} height="10" rx="1" fill={r.failed ? 'var(--red)' : 'var(--teal)'}/></svg></span>
+        <span class="val">{f(r.gas)}</span>
+      </div>
+    ))}
+  </div>
+  <div class="gd-legend"><span><i style="background:var(--teal)"></i>success</span><span><i style="background:var(--red)"></i>reverted</span></div>
+  <details>
+    <summary class="note" style="cursor:pointer;min-height:44px;display:flex;align-items:center">Show as a table</summary>
+    <div class="table-wrap" tabindex="0" role="region" aria-label="Gas by transaction, scrollable"><table><thead><tr><th>#</th><th>Function</th><th>Status</th><th class="num">Block</th><th class="num">Gas used</th></tr></thead><tbody>
+      {rows.map((r, i) => <tr><td>{i + 1}</td><td class="mono">{r.fn}</td><td>{r.failed ? 'reverted' : 'success'}</td><td class="num mono">{r.block}</td><td class="num mono">{f(r.gas)}</td></tr>)}
+    </tbody></table></div>
+  </details>
+</section>
+
+<section class="card" aria-labelledby="time-h">
+  <h2 id="time-h">Time between events <Provenance kind="snapshot" note="run script clock" /></h2>
+  <p class="gd-note">The strip places all {evs.length} events on the {secs(dur)} timeline. Bars below show how long each transaction came after the event before it: between {secs(gapMin)} and {secs(gapMax)}, because the script waits for each transaction to be included in a block before sending the next.</p>
+  <div>
+    <div class="gd-timeline" role="img" aria-label={`Timeline of ${evs.length} events across ${secs(dur)}: policy and snapshot at the start, the agent answers at ${secs(t1?.at ?? 0)}, then transactions and refused attempts until ${secs(dur)}.`}>
+      {evs.map((e) => <i class={kindClass(e)} style={`left:${(e.at / dur) * 100}%`} title={`${secs(e.at)}: ${e.title}`}></i>)}
+    </div>
+    <div class="gd-axis"><span>0 s</span><span>{secs(dur / 2)}</span><span>{secs(dur)}</span></div>
+  </div>
+  <div class="gd-legend"><span><i style="background:var(--teal)"></i>agent</span><span><i style="background:var(--neon)"></i>identity gates and economics</span><span><i style="background:var(--green)"></i>transaction</span><span><i style="background:var(--red);opacity:.55"></i>refused attempt (read-only call)</span><span><i style="background:var(--red)"></i>reverted transaction</span><span><i style="background:var(--dim)"></i>other</span></div>
+  <div class="gd-bars" role="list" aria-label="Time since the previous event, per transaction">
+    {rows.map((r) => (
+      <div class:list={['gd-brow', { bad: r.failed }]} role="listitem">
+        <span class="lab"><span class="mono">{r.fn}</span><small>{r.failed ? 'reverted · ' : ''}at {secs(evs.find((e) => e.id === r.id)!.at)}</small></span>
+        <span class="gd-track"><svg viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden="true"><rect x="0" y="0" width={(r.gap / maxGap) * 100} height="10" rx="1" fill={r.failed ? 'var(--red)' : 'var(--teal)'}/></svg></span>
+        <span class="val">{secs(r.gap)}</span>
+      </div>
+    ))}
+  </div>
+</section>
+
+<div class="gd-gauges">
+  <section class="card" aria-labelledby="spend-h">
+    <h2 id="spend-h">Spend against the caps <Provenance kind="snapshot" /></h2>
+    <div class="gd-gauge">
+      <div class="gd-gauge-top"><span>Per-trade cap</span><b>{usdCents(SPEND_CENTS)} of {usdCents(maxExec)}</b></div>
+      <div class="gd-gtrack" role="img" aria-label={`Spend ${usdCents(SPEND_CENTS)} is ${spendPct.toFixed(1)} percent of the ${usdCents(maxExec)} per-trade cap`}><div class="gd-gfill" style={`width:${spendPct}%`}></div><div class="gd-gmark" style="left:calc(100% - 1px)"></div></div>
+      <div class="gd-gscale"><span>$0</span><span>{spendPct.toFixed(1)}% used</span><span>cap {usdCents(maxExec)}</span></div>
+    </div>
+    <div class="gd-gauge">
+      <div class="gd-gauge-top"><span>Daily commitment cap (per UTC day)</span><b>{usdCents(SPEND_CENTS)} of {usdCents(daily)}</b></div>
+      <div class="gd-gtrack" role="img" aria-label={`Spend ${usdCents(SPEND_CENTS)} is ${dailyPct.toFixed(1)} percent of the ${usdCents(daily)} daily cap`}><div class="gd-gfill" style={`width:${dailyPct}%`}></div><div class="gd-gmark" style="left:calc(100% - 1px)"></div></div>
+      <div class="gd-gscale"><span>$0</span><span>{dailyPct.toFixed(1)}% used</span><span>cap {usdCents(daily)}</span></div>
+    </div>
+    <p class="gd-note">The spend is {usdCents(ECON.landedCents)} landed cost × {ECON.units} units, derived by the contract. The agent’s over-the-cap attempt in the run was {spendAttack ? usdCents(spendAttack.args[0]) : 'n/a'}, {spendAttack ? usdCents(Number(spendAttack.args[0]) - maxExec) + ' over' : ''}, and was refused.</p>
+  </section>
+  <section class="card" aria-labelledby="margin-h">
+    <h2 id="margin-h">Margin against the floor <Provenance kind="snapshot" /></h2>
+    <div class="gd-gauge">
+      <div class="gd-gauge-top"><span>Net margin of the committed trade</span><b>{pctClean(ECON.marginBps)} vs floor {pctClean(floor)}</b></div>
+      <div class="gd-gtrack" role="img" aria-label={`Margin ${pctClean(ECON.marginBps)} is above the ${pctClean(floor)} floor`}><div class="gd-gfill" style={`width:${marginPct}%`}></div><div class="gd-gmark" style={`left:${floorPct}%`}></div></div>
+      <div class="gd-gscale"><span>0%</span><span>white line: floor {pctClean(floor)}</span><span>{MSCALE / 100}%</span></div>
+    </div>
+    <p class="gd-note">Margin is net profit ÷ sell price: {usdCents(ECON.netCents)} ÷ {usdCents(sellCents)}, rounded down to {ECON.marginBps} basis points (1 basis point = 0.01%). The gauge is drawn from 0% to {MSCALE / 100}% for readability. Net profit for the whole batch is {usdCents(ECON.netCents * ECON.units)}.</p>
+  </section>
+</div>
+</Shell></Base>

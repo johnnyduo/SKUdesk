@@ -1,0 +1,96 @@
+---
+import Base from '../../layouts/Base.astro';
+import Shell from '../../components/shell/Shell.astro';
+import PageHead from '../../components/shell/PageHead.astro';
+import LiveConnectors from '../../components/integrations/LiveConnectors.tsx';
+import '../../components/guard/guard.css';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { RUN, CHAIN, SNAPSHOT } from '../../lib/run';
+import Provenance from '../../components/ui/Provenance.astro';
+import type { Provenance as Kind } from '../../lib/provenance';
+
+// Truthful by construction: only mention web fonts if the shared layout really loads them.
+const usesGoogleFonts = readFileSync(join(process.cwd(), 'src/layouts/Base.astro'), 'utf8').includes('fonts.googleapis.com');
+
+const host = new URL(CHAIN.rpc).host;
+const explorerHost = new URL(CHAIN.explorer).host;
+type W = 'browser' | 'build' | 'dev';
+const WL: Record<W, string> = { browser: 'Browser, at runtime', build: 'Site build', dev: 'Developer machine only' };
+const deps: { name: string; sub: string; role: string; where: W[]; pages: string; prov?: Kind; note?: string }[] = [
+  { name: 'Robinhood Chain Testnet RPC', sub: host, role: 'The connection to the blockchain. In your browser it answers read-only questions: the vault balances, the live mandate, a lot’s status, and the simulator’s test calls. During the agent run it also carried the transactions.', where: ['browser', 'dev'], pages: 'Overview, Mandate and guardrails, Lots, Agent trade', prov: 'onchain' },
+  { name: 'Blockscout explorer', sub: explorerHost, role: 'The public block explorer. This site only links to it, so you can open every transaction and read the verified contract source; the pages do not call its API. Source verification was done against it when the contracts were deployed.', where: ['browser', 'dev'], pages: 'Every page with a transaction or address link' },
+  { name: 'AI Agent', sub: 'language model', role: 'The language model that proposed the trade. It ran once, offline, during the agent run. The pages never call it and no API key is shipped to the browser, so nothing here is a live model.', where: ['dev'], pages: 'Agent (shows its run reasoning)', prov: 'snapshot', note: 'one run' },
+  { name: 'Foundry', sub: 'forge', role: 'Compiles the contracts, runs the test suite (unit, fuzz and invariant tests) and deploys to the chain.', where: ['dev'], pages: 'Mandate and guardrails (test names), Contracts' },
+  { name: 'viem', sub: 'TypeScript Ethereum library', role: 'Builds the contract calls, sends them, and decodes the contract’s refusals into names and numbers. It is bundled into the pages that read the chain, and is also what the agent script uses.', where: ['browser', 'dev'], pages: 'Overview, Mandate and guardrails, Lots' },
+  { name: 'Economics and identity-gate packages', sub: 'packages/economics, packages/matching', role: 'Integer-cent unit economics, which mirrors the contract’s arithmetic, and the product-identity gates that decide whether two listings are the same item. The simulator runs the economics in your browser; the Radar verdicts were computed from the gates when the site was built, and the gates also ran during the agent run.', where: ['browser', 'build', 'dev'], pages: 'Mandate and guardrails, Radar, Opportunities' },
+  { name: 'Run data files', sub: 'run.json, snapshot.json, deployment.json', role: `The agent run, the ${SNAPSHOT.offers.length}-offer market snapshot (a fixed snapshot, not a live feed) and the deployed addresses. The snapshot offers carry Shopee, Lazada and Google names, but nothing is fetched from those sites: they are fixed listings. The files are written by the agent script and baked into the pages when the site is built.`, where: ['build'], pages: 'All /app pages', prov: 'snapshot' },
+  { name: 'Astro and React', sub: 'static site', role: 'Astro builds the pages ahead of time into plain files; React runs only the interactive parts. The pages are static; the only server code is the Cloudflare Worker behind /api (see the Live backend table).', where: ['build', 'browser'], pages: 'All pages' },
+];
+if (usesGoogleFonts) deps.push({ name: 'Google Fonts', sub: 'fonts.googleapis.com, fonts.gstatic.com', role: 'Serves the typefaces (Inter, JetBrains Mono, Instrument Serif). Cosmetic only: no data is read from it and pages fall back to system fonts without it.', where: ['browser'], pages: 'All pages' });
+const none = [
+  ['No backend behind the run pages', 'Every number on the run pages under /app comes from the chain, the run files, or your own inputs. The /api Worker only powers the panels tagged /api.'],
+  ['No wallet to view the site', 'Viewing pages needs no wallet. Only the Owner console and Deploy your agent send transactions, and nothing is signed or sent without your confirmation in your wallet. /market has a Connect button, but it sends nothing: bots do the trading there.'],
+  ['No live market feed in the run', 'Prices in the run come from a snapshot taken before the run. The /api price check is separate and labels every source REAL or TEST DATA. Lazada and Shopee are integrated as fixed sample listings in the snapshot, with no live API.'],
+  ['No live model call', 'The AI agent ran once, offline. The page shows what it said.'],
+];
+---
+<Base title="Dependencies | SKUdesk" description="What SKUdesk relies on, what each part does and where it actually runs: the chain, the price sources, the Cloudflare Worker and the contracts."><Shell>
+<PageHead title="Dependencies" sub="What this system relies on, what each part does, and where it actually runs."/>
+
+<section class="card" aria-labelledby="live-h">
+<h2 id="live-h">Live backend <span class="pill blue">/api</span></h2>
+<LiveConnectors client:load/>
+<noscript><p class="note">Live status needs JavaScript.</p></noscript>
+<p class="note">Rows read NOT CONNECTED until credentials are set with wrangler secret put; nothing here is cached in your browser.</p>
+</section>
+
+<section class="card" aria-labelledby="src-h">
+<h2 id="src-h">Price sources</h2>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Price sources, scrollable">
+<table>
+<thead><tr><th>Source</th><th>What it is</th><th>Data</th></tr></thead>
+<tbody>
+<tr><td><b>Google Shopping</b> via SerpApi<span class="cell-sub">SearchApi.io is its backup, not a fourth source</span></td><td class="sm">Live listings, fetched by the Worker with a key, cached up to 24 hours, under a daily call budget. Prices include shipping when the source states it, before tax and fees.</td><td><Provenance kind="live" note="when keyed" /></td></tr>
+<tr><td><b>eBay</b></td><td class="sm">Browse API. Without a key the Worker returns generated test offers.</td><td><Provenance kind="test" note="until keyed" /></td></tr>
+<tr><td><b>Best Buy</b></td><td class="sm">Products API. Without a key the Worker returns generated test offers.</td><td><Provenance kind="test" note="until keyed" /></td></tr>
+<tr><td><b>Lazada, Shopee</b></td><td class="sm">Integrated as sample listings: the run’s snapshot uses fixed listings that carry these names; there is no live API.</td><td><Provenance kind="snapshot" note={SNAPSHOT.capturedAt.slice(0, 10)} /></td></tr>
+</tbody>
+</table>
+</div>
+<p class="note">The live status of each source, with calls left today, is in the table above.</p>
+</section>
+
+<section class="gd-intro" aria-labelledby="wyla">
+  <h2 id="wyla">What you are looking at</h2>
+  <p>The honest list of moving parts. Your browser asks the {CHAIN.name} RPC at <span class="mono">{host}</span> for data{usesGoogleFonts ? ', and fetches typefaces from Google Fonts' : ''}. It sends a transaction only if you connect a wallet on the Owner console or Deploy your agent page and confirm it there. The AI model, the compiler and the transactions of the agent run happened earlier, on the developer’s machine, and left behind the run files this site is built from.</p>
+  <p class="gd-gloss">RPC is the public endpoint a program uses to ask a blockchain questions. Read-only means it can look but cannot change anything.</p>
+</section>
+
+<section class="card" aria-labelledby="d-h">
+  <h2 id="d-h">What each dependency does</h2>
+  <div class="table-wrap" tabindex="0" role="region" aria-label="Dependency list, scrollable">
+    <table class="gd-deps">
+      <thead><tr><th>Dependency</th><th>Role</th><th>Where it runs</th><th>Used by</th></tr></thead>
+      <tbody>
+        {deps.map((d) => (
+          <tr>
+            <td data-th="Dependency"><b>{d.name}</b>{d.prov && <> <Provenance kind={d.prov} note={d.note} /></>}<span class="cell-sub mono">{d.sub}</span></td>
+            <td data-th="Role" class="sm">{d.role}</td>
+            <td data-th="Where it runs"><div class="gd-wc">{d.where.map((w) => <span class={`gd-where ${w}`}>{WL[w]}</span>)}</div></td>
+            <td data-th="Used by" class="sm muted">{d.pages}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+  <p class="gd-note">Latency appears only in the live backend row, where the Worker measures it; no “connected” lights are shown for anything else. The Overview and Mandate pages show a live chain read with its block number, or say so when the RPC cannot be reached.</p>
+</section>
+
+<section class="gd-section" aria-labelledby="n-h">
+  <h2 id="n-h">What it does not depend on</h2>
+  <ul class="gd-no">
+    {none.map(([t, d]) => <li><b>{t}</b>{d}</li>)}
+  </ul>
+</section>
+</Shell></Base>

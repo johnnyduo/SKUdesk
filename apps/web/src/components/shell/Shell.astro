@@ -1,0 +1,66 @@
+---
+import './app.css';
+import { CHAIN, DEPLOYMENT, explorer, short } from '../../lib/run';
+import WalletButton from '../wallet/WalletButton.tsx';
+import { JOURNEY, stepOf, nextOf, prevOf } from '../../lib/journey';
+const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+// The six story steps (lib/journey.ts) are the menu. Steps 4 to 6 hold several pages; those pages show as tabs on every page of the step.
+const step = stepOf(path);
+const tabOn = (href: string) => { const h = href.replace(/\/$/, '') || '/'; return h === '/app' ? path === '/app' : path === h || path.startsWith(h + '/'); };
+const tab = step?.tabs?.find(([h]) => tabOn(h));
+const label = tab?.[1] ?? step?.label ?? 'Overview';
+const next = step ? nextOf(step) : undefined;
+const prev = step ? prevOf(step) : undefined;
+let rpcHost = '';
+try { rpcHost = new URL(CHAIN.rpc).host; } catch { rpcHost = 'none'; }
+const coreHref = explorer.address(DEPLOYMENT.core);
+---
+<div class="layout">
+<aside class="side">
+<a class="brand" href="/" aria-label="SKUdesk home"><span class="logo-mark"><svg width="16" height="16" viewBox="0 0 32 32" aria-hidden="true"><path d="M8 22 16 8l8 14" stroke="#CCFF00" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span><b>SKUdesk</b></a>
+<nav class="nav" aria-label="Primary">
+{JOURNEY.map((j) => <a href={j.href} class:list={[{ on: step?.n === j.n }]} aria-current={step?.n === j.n ? 'step' : undefined}><span class="nav-n" aria-hidden="true">{j.n}</span><span class="nav-t">{j.label}</span><span class="sr-only"> (step {j.n} of {JOURNEY.length})</span></a>)}
+</nav>
+<div class="side-foot">
+<div><span class="dot"></span>{CHAIN.name}</div>
+<div class="mono">Chain id {CHAIN.id}</div>
+<div class="mono">RPC {rpcHost}</div>
+<div class="mono">Core {coreHref ? <a class="foot-link" href={coreHref} target="_blank" rel="noopener noreferrer" title={DEPLOYMENT.core}>{short(DEPLOYMENT.core, 6, 4)} ↗<span class="sr-only"> (opens the block explorer in a new tab)</span></a> : short(DEPLOYMENT.core, 6, 4)}</div>
+</div>
+</aside>
+<div class="content">
+<header class="top">
+<details class="mnav"><summary aria-label="Open navigation menu"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h14M3 10h14M3 14h14"/></svg></summary><nav class="mnav-panel" aria-label="Mobile primary">{JOURNEY.map((j) => <a href={j.href} class:list={[{ on: step?.n === j.n }]} aria-current={step?.n === j.n ? 'step' : undefined}><span class="nav-n" aria-hidden="true">{j.n}</span>{j.label}</a>)}</nav></details>
+<a class="brand-m" href="/" aria-label="SKUdesk home"><span class="logo-mark"><svg width="16" height="16" viewBox="0 0 32 32" aria-hidden="true"><path d="M8 22 16 8l8 14" stroke="#CCFF00" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span><b>SKUdesk</b></a>
+<div class="crumb"><a href="/" class="mono" aria-label="SKUdesk home">SKUdesk</a><span class="sep">/</span><span class="muted">{label}</span></div>
+<span class="top-status hide-sm"><span class="dot"></span>{CHAIN.name}<span class="muted hide-md">&nbsp;· Run + live chain reads</span></span>
+<span class="spacer"></span>
+<WalletButton client:load />
+{next ? <a class="btn top-cta" href={next.href} data-testid="top-next">Next: {next.label} <span aria-hidden="true">→</span></a> : <a class="btn ghost top-cta" href="/app/">Desk</a>}
+</header>
+<main id="main">
+{step?.tabs && <nav class="subtabs" aria-label={`${step.label} sections`}>{step.tabs.map(([h, l]) => <a href={h} class:list={[{ on: tabOn(h) }]} aria-current={tabOn(h) ? 'page' : undefined}>{l}</a>)}</nav>}
+<slot/>
+{step && (
+<nav class="journey" aria-label="Story steps" data-testid="journey">
+  <div class="journey-dots" aria-hidden="true">{JOURNEY.map((j) => <i class:list={[{ on: j.n === step.n, done: j.n < step.n }]}></i>)}</div>
+  <div class="journey-row">
+    {prev ? <a class="journey-a prev" href={prev.href}><small>← Step {prev.n}</small><b>{prev.label}</b></a> : <span></span>}
+    {next ? <a class="journey-a next" href={next.href} data-testid="journey-next"><small>Next, step {next.n} of {JOURNEY.length}</small><b>{next.label} <span aria-hidden="true">→</span></b><em>{next.blurb}</em></a> : <a class="journey-a next" href="/app/"><small>That was the whole story</small><b>Back to the Desk <span aria-hidden="true">→</span></b></a>}
+  </div>
+</nav>
+)}
+</main>
+</div>
+</div>
+<script>
+  // Fold each page's long intro ("What you are looking at") behind one toggle. Without JavaScript it stays open.
+  document.querySelectorAll<HTMLElement>('.explain, .mk-what, .gd-intro, .dk-explain').forEach((el) => {
+    const d = document.createElement('details');
+    d.className = 'fold';
+    const sm = document.createElement('summary');
+    sm.textContent = 'What is this page?';
+    el.replaceWith(d);
+    d.append(sm, el);
+  });
+</script>

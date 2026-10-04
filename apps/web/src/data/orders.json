@@ -1,0 +1,581 @@
+{
+  "deployed": true,
+  "chainId": 46630,
+  "escrow": "0x8b4BBad117aD6a0D85D9b48Ed5526Bde9BF4Eb59",
+  "verifier": "0x6129C88CE91ACdf5c1E42188B1aF88C2166a5501",
+  "token": "0x0B71c1B397A9d33198e0A6a5701E12011AC84D95",
+  "book": "0x8b4dFd26ab2A7Bdfd2090e434bcfB2C10A296E5d",
+  "market": "CASE-IP16PRO-CLEAR-MAG-001",
+  "marketId": "0x874760df68911be9e368727c9d7c69bb3a9fc9c8845563c7febbc10a8bb4550e",
+  "sku": "0x83ea648faca5fa4f9436db1f2072bb560ae5c62a7488162deb5c60312086a81b",
+  "symbol": "mUSDG",
+  "bondBps": 2000,
+  "windows": {
+    "accept": 900,
+    "ship": 1800,
+    "verify": 1800,
+    "dispute": 600,
+    "resolve": 900
+  },
+  "logsFromBlock": 128257016,
+  "head": 128258066,
+  "proof": {
+    "ranAt": "2026-10-03T16:54:38.177Z",
+    "script": "apps/web/tools/order-proof.ts",
+    "statement": "Script-controlled wallets and operator-issued test units. The deployer key is the verifier, the BlindBook owner and the mUSDG owner. No physical goods moved: delivery was attested by the verifier.",
+    "operator": "0x6129C88CE91ACdf5c1E42188B1aF88C2166a5501",
+    "wallets": {
+      "buyer": "0xE2858f35B3d46645fF72e3F613a4e0D265C58C4d",
+      "sellerA": "0x94BC4993eCb5615BF3549AB8Fe963DAc23301c42",
+      "sellerB": "0xd913E048DD101ebc6Fb4B45cc0922b7cbb5435e5",
+      "bidder": "0x9f4deA447176f2F7D2EFd1f67EE8a304eEFFd0e2"
+    },
+    "shipTo": "Opaque: keccak256(random salt, \"proof-ship-to\"). The salt is not published.",
+    "prices": {
+      "referenceCents": 1111,
+      "askACents": 1078,
+      "askBCents": 1089,
+      "bidCents": 1178,
+      "capCents": 1334
+    },
+    "round": {
+      "epoch": 102,
+      "price": 1120,
+      "volume": 10,
+      "orderCount": 8,
+      "clearTx": "0xcf517a0839ab6ed03fc80f68b27494153d54d94f04d0dca4bc49aa3d18d88bab",
+      "clearedBy": "another address (the keeper), which is allowed",
+      "keeperOrders": 5,
+      "sells": [
+        {
+          "who": "sellerA",
+          "trader": "0x94BC4993eCb5615BF3549AB8Fe963DAc23301c42",
+          "index": 7,
+          "ask": 1078,
+          "units": 2,
+          "filled": 2
+        },
+        {
+          "who": "sellerB",
+          "trader": "0xd913E048DD101ebc6Fb4B45cc0922b7cbb5435e5",
+          "index": 6,
+          "ask": 1089,
+          "units": 2,
+          "filled": 2
+        }
+      ],
+      "bid": {
+        "trader": "0x9f4deA447176f2F7D2EFd1f67EE8a304eEFFd0e2",
+        "index": 5,
+        "price": 1178,
+        "units": 4,
+        "filled": 4
+      }
+    },
+    "setup": [
+      {
+        "label": "send 0.002 ETH to buyer",
+        "caller": "verifier / operator (deployer)",
+        "tx": "0xef7dfa2986c1306e650b96fc16ca3bf0570739c9079ec71be96b5fefb6b4e39b",
+        "block": 128257029
+      },
+      {
+        "label": "mint 26.68 mUSDG to buyer",
+        "caller": "verifier / operator (deployer)",
+        "tx": "0x7635dd14660c07f0c660fbfcaa7c55ff0fcb576b62ba7ef9b491570a7ee48746",
+        "block": 128257038
+      },
+      {
+        "label": "send 0.002 ETH to sellerA",
+        "caller": "verifier / operator (deployer)",
+        "tx": "0x60abe24fbb94e19fcb8948fd84dc809cabd8bf6aad608506bb58557bd99823e6",
+        "block": 128257050
+      },
+      {
+        "label": "mint 8.668 mUSDG to sellerA",
+        "caller": "verifier / operator (deployer)",
+        "tx": "0xe6d0de53cd2a655f14cc36183b4662e6d11bdcb831a63c121d2a934aabc75e1d",
+        "block": 128257063
+      },
+      {
+        "label": "send 0.002 ETH to sellerB",
+        "caller": "verifier / operator (deployer)",
+        "tx": "0x9a499ba23fa0b54bddf37359dbdf98ddc0f70a6a1209ddd821b2b33c9da9c54f",
+        "block": 128257076
+      },
+      {
+        "label": "mint 8.668 mUSDG to sellerB",
+        "caller": "verifier / operator (deployer)",
+        "tx": "0xe4ef7fd283f2af1522d18430ef17b83052d40db3c65f2e8ce519aad76f195b3e",
+        "block": 128257087
+      },
+      {
+        "label": "send 0.002 ETH to bidder",
+        "caller": "verifier / operator (deployer)",
+        "tx": "0x8bee45a6ac33da794ae013a53e771779ed677506bf70095d999899a36032088c",
+        "block": 128257103
+      },
+      {
+        "label": "mint 53.12 mUSDG to bidder",
+        "caller": "verifier / operator (deployer)",
+        "tx": "0xc9696b80249bd326ca4a8b7b0a647ad37b9369050cf0b54bdc2e6f7b3db54000",
+        "block": 128257114
+      },
+      {
+        "label": "owner issues 2 units to sellerA (operator-issued, not goods)",
+        "caller": "verifier / operator (deployer)",
+        "tx": "0x2faf496707af296b581ed44f5adaa1d2e688d47bed64e75b7db0e9fe7a4b1b44",
+        "block": 128257127
+      },
+      {
+        "label": "sellerA approves the escrow for the bond",
+        "caller": "sellerA",
+        "tx": "0x71d8808e9b0b924da6e43944cf9ced50d5142cfab95d781efb618a9e0aaf4572",
+        "block": 128257143
+      },
+      {
+        "label": "sellerA deposits a 2.668 mUSDG bond",
+        "caller": "sellerA",
+        "tx": "0xecb6d442c56eab375ff67bd8a7f1d6d94e4bcf0d83bdecc430c075bc9d546b8c",
+        "block": 128257155
+      },
+      {
+        "label": "owner issues 2 units to sellerB (operator-issued, not goods)",
+        "caller": "verifier / operator (deployer)",
+        "tx": "0x3c23a81f9c14a6c164cf23bcb7d3f63d1042faf76f73bc216e72e2e40974fcf4",
+        "block": 128257166
+      },
+      {
+        "label": "sellerB approves the escrow for the bond",
+        "caller": "sellerB",
+        "tx": "0x4dd6e6adf8af19076dc625fb0a0628686a35b9cd149792b94f2b7c654bad8eb5",
+        "block": 128257179
+      },
+      {
+        "label": "sellerB deposits a 2.668 mUSDG bond",
+        "caller": "sellerB",
+        "tx": "0xa8440471a31a5e57000418d8c5172f12a024382cf2fc4d1c1c6387ef79f5dd44",
+        "block": 128257190
+      },
+      {
+        "label": "sellerA approves BlindBook",
+        "caller": "sellerA",
+        "tx": "0x4693c805684b841582da46d5cdb86a3a91b810adfb265f8ce72b63a2a613484e",
+        "block": 128257202
+      },
+      {
+        "label": "sellerA deposits 6.00 mUSDG into BlindBook",
+        "caller": "sellerA",
+        "tx": "0x361c1a71f8a388e468f55c2f57bce3af1afb4c0c9b4250ba3319558c462a1e0b",
+        "block": 128257216
+      },
+      {
+        "label": "sellerB approves BlindBook",
+        "caller": "sellerB",
+        "tx": "0x513e5593230b668d24fb4edbd7ce704fef835869ac63cb570328718fbebfd0a3",
+        "block": 128257229
+      },
+      {
+        "label": "sellerB deposits 6.00 mUSDG into BlindBook",
+        "caller": "sellerB",
+        "tx": "0x41fd92c9e0c570bb7a51c7a2dbd6d6fb01fd102b7c771c1d0881f57d4edb1f62",
+        "block": 128257238
+      },
+      {
+        "label": "bidder approves BlindBook",
+        "caller": "bidder",
+        "tx": "0x69f824c316809d959d2a32234f51df80aeb04fbf9cbe979a2301bf9507bafd1a",
+        "block": 128257251
+      },
+      {
+        "label": "bidder deposits 53.12 mUSDG into BlindBook",
+        "caller": "bidder",
+        "tx": "0x78eb5b9551639f9edf22b8b545950b8131d84eb030636cf415917aefafedb136",
+        "block": 128257258
+      },
+      {
+        "label": "buyer approves the escrow",
+        "caller": "buyer",
+        "tx": "0xb9fa98b7d8d06f0750dc0ceda3c179ff1138eec7a6c0b1e08f07be9313f5685d",
+        "block": 128257275
+      }
+    ],
+    "roundSteps": [
+      {
+        "label": "bidder commits a sealed buy (hash only)",
+        "caller": "bidder",
+        "tx": "0xd731245e28604726b406493e41ec2d1a9b666f138fec1511e3f2ef2b1f9ff6b9",
+        "block": 128257515
+      },
+      {
+        "label": "sellerA commits a sealed sell (hash only)",
+        "caller": "sellerA",
+        "tx": "0x31e93275d4c430d731e61cf4bcb7f39fe2e497e5d527c5c43ded0f58e0d36988",
+        "block": 128257515
+      },
+      {
+        "label": "sellerB commits a sealed sell (hash only)",
+        "caller": "sellerB",
+        "tx": "0x884f0045fa00f48f590fa0d3e419aca5a48c7abf9772763975aa1c01fd42305b",
+        "block": 128257515
+      },
+      {
+        "label": "bidder reveals the buy: 1178c x 4",
+        "caller": "bidder",
+        "tx": "0x925fa2bbe6f67b86290f3a084421d13ddd14626d66764cc623f680a4466845c1",
+        "block": 128257624
+      },
+      {
+        "label": "sellerA reveals the sell: 1078c x 2",
+        "caller": "sellerA",
+        "tx": "0xbcfbc8c835a713e03b470e0c14773145e0ec082fbd481213d2ea0fc7ab3dff7d",
+        "block": 128257624
+      },
+      {
+        "label": "sellerB reveals the sell: 1089c x 2",
+        "caller": "sellerB",
+        "tx": "0x209a08e54fbb58a389f34b70eeb36a690bafc051647ca84a80351076afb443d2",
+        "block": 128257624
+      }
+    ],
+    "orders": [
+      {
+        "id": 1,
+        "scenario": "delivered and released",
+        "steps": [
+          {
+            "label": "buyer funds order 1 (ship-to hash 0x42974b89a3\u2026, opaque)",
+            "caller": "buyer",
+            "tx": "0x36f96dbd187d9a27b0ae9d0237ff4d1671505e2a9a30023abd4eec7b603b87f6",
+            "block": 128257293
+          },
+          {
+            "label": "buyer matches order 1 to sellerA's fill (round 102, order #7)",
+            "caller": "buyer",
+            "tx": "0x6c3d691a04ddc97745ace75ab48516835070fee4b0817df40ec22618e10e745b",
+            "block": 128257723
+          },
+          {
+            "label": "sellerA accepts order 1 and locks its bond",
+            "caller": "sellerA",
+            "tx": "0x93e04ea9b25f35b773aab8bee177965470dbe084dbbe48b9a3dfb0c8bb0ae6c2",
+            "block": 128257775
+          },
+          {
+            "label": "sellerA reports shipment tracking:c3d82ac59e42010e (AGENT ATTESTED: only a hash on chain)",
+            "caller": "sellerA",
+            "tx": "0x9793f890994aa7b462477c46bd14432747afdb440e8ff37cb771b6dc94a92cb6",
+            "block": 128257786
+          },
+          {
+            "label": "verifier (deployer) attests delivery with the expected SKU. No goods moved; this is the named verifier's statement",
+            "caller": "verifier / operator (deployer)",
+            "tx": "0x2c9e842c4d01589d6bb2f3a11d04d887fc0b65e166d8b3aad23d54f7e8b10310",
+            "block": 128257802
+          },
+          {
+            "label": "buyer releases the payment",
+            "caller": "buyer",
+            "tx": "0xfeecf0c04aa5ba2f6657e22bf5c077c7dbb67f9f106abb806aa4b5e4fc5f01ed",
+            "block": 128257819
+          }
+        ],
+        "assertions": [
+          {
+            "order": 1,
+            "label": "filled >= consumed + qty for sellerA before matchOrder",
+            "ok": true,
+            "detail": "filled 2 >= consumed 0 + qty 1 (ask 1078c)"
+          },
+          {
+            "order": 1,
+            "label": "the price is the BlindBook round price",
+            "ok": true,
+            "detail": "price 1120c, seller 0x94BC4993eCb5615BF3549AB8Fe963DAc23301c42"
+          },
+          {
+            "order": 1,
+            "label": "bond locked equals bondNeeded",
+            "ok": true,
+            "detail": "2.24 mUSDG"
+          },
+          {
+            "order": 1,
+            "label": "Released event: payment = price x qty x CENT",
+            "ok": true,
+            "detail": "11.20 mUSDG"
+          },
+          {
+            "order": 1,
+            "label": "Released event: buyer refund = cap payment minus payment",
+            "ok": true,
+            "detail": "2.14 mUSDG"
+          },
+          {
+            "order": 1,
+            "label": "bond is back in bondFree",
+            "ok": true,
+            "detail": "2.668 mUSDG (bond 2.24 mUSDG returned)"
+          },
+          {
+            "order": 1,
+            "label": "seller token balance rose by payment",
+            "ok": true,
+            "detail": "+11.20 mUSDG"
+          },
+          {
+            "order": 1,
+            "label": "buyer token balance rose by the refund of the difference",
+            "ok": true,
+            "detail": "+2.14 mUSDG"
+          },
+          {
+            "order": 1,
+            "label": "order 1 is RELEASED",
+            "ok": true,
+            "detail": "RELEASED"
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "scenario": "refunded by the buyer before acceptance",
+        "steps": [
+          {
+            "label": "buyer funds order 2 (ship-to hash 0x1b78c32887\u2026, opaque)",
+            "caller": "buyer",
+            "tx": "0x5f5603c6a6b3f941dadbe65d6145b296058b401d056849a5fe7ef6479126ed63",
+            "block": 128257307
+          },
+          {
+            "label": "buyer matches order 2 to sellerB's fill (round 102, order #6)",
+            "caller": "buyer",
+            "tx": "0x08c4561e55a038001b1e8323ac684be61e4b8d03d40f6d7a4e300ff36801ff36",
+            "block": 128257736
+          },
+          {
+            "label": "buyer withdraws offer 2 before the seller accepts (refundUnaccepted)",
+            "caller": "buyer",
+            "tx": "0xf1cc77952eb4ab8a976787aed8806defcc7e0027740e9a0783c7107cb1909c7f",
+            "block": 128257757
+          }
+        ],
+        "assertions": [
+          {
+            "order": 2,
+            "label": "filled >= consumed + qty for sellerB before matchOrder",
+            "ok": true,
+            "detail": "filled 2 >= consumed 0 + qty 1 (ask 1089c)"
+          },
+          {
+            "order": 2,
+            "label": "order 2 is REFUNDED",
+            "ok": true,
+            "detail": "REFUNDED"
+          },
+          {
+            "order": 2,
+            "label": "buyer got the full funded amount back",
+            "ok": true,
+            "detail": "+13.34 mUSDG"
+          },
+          {
+            "order": 2,
+            "label": "the fill reservation was released",
+            "ok": true,
+            "detail": "consumed 1 -> 0"
+          }
+        ]
+      }
+    ],
+    "assertions": [
+      {
+        "order": "setup",
+        "label": "round price is within the buyer cap",
+        "ok": true,
+        "detail": "1120c <= 1334c"
+      },
+      {
+        "order": "setup",
+        "label": "order 1 was funded before the round began",
+        "ok": true,
+        "detail": "epoch start 1791046413 >= createdAt 1791046375"
+      },
+      {
+        "order": "setup",
+        "label": "order 2 was funded before the round began",
+        "ok": true,
+        "detail": "epoch start 1791046413 >= createdAt 1791046377"
+      },
+      {
+        "order": "setup",
+        "label": "the escrow holds exactly the sellers\u2019 free bonds (nothing stranded)",
+        "ok": true,
+        "detail": "escrow 5.336 mUSDG, bondFree A+B 5.336 mUSDG"
+      }
+    ],
+    "skipped": [
+      "unshipped timeout (the ship window is longer than 20 minutes; run with --wait-timeout to wait for it)"
+    ]
+  },
+  "events": [
+    {
+      "name": "BondDeposited",
+      "args": {
+        "seller": "0x94BC4993eCb5615BF3549AB8Fe963DAc23301c42",
+        "amount": "2668000",
+        "bondFree": "2668000"
+      },
+      "tx": "0xecb6d442c56eab375ff67bd8a7f1d6d94e4bcf0d83bdecc430c075bc9d546b8c",
+      "block": 128257155,
+      "logIndex": 1,
+      "time": 1791046351
+    },
+    {
+      "name": "BondDeposited",
+      "args": {
+        "seller": "0xd913E048DD101ebc6Fb4B45cc0922b7cbb5435e5",
+        "amount": "2668000",
+        "bondFree": "2668000"
+      },
+      "tx": "0xa8440471a31a5e57000418d8c5172f12a024382cf2fc4d1c1c6387ef79f5dd44",
+      "block": 128257190,
+      "logIndex": 1,
+      "time": 1791046358
+    },
+    {
+      "name": "OrderCreated",
+      "args": {
+        "id": "1",
+        "buyer": "0xE2858f35B3d46645fF72e3F613a4e0D265C58C4d",
+        "qty": "1",
+        "maxPriceCents": "1334",
+        "shipToHash": "0x42974b89a3c2361771235e261321faaeef6608bde04cbc199b418541aeb7739a",
+        "matchBy": "1791053574",
+        "funded": "13340000"
+      },
+      "tx": "0x36f96dbd187d9a27b0ae9d0237ff4d1671505e2a9a30023abd4eec7b603b87f6",
+      "block": 128257293,
+      "logIndex": 1,
+      "time": 1791046375
+    },
+    {
+      "name": "OrderCreated",
+      "args": {
+        "id": "2",
+        "buyer": "0xE2858f35B3d46645fF72e3F613a4e0D265C58C4d",
+        "qty": "1",
+        "maxPriceCents": "1334",
+        "shipToHash": "0x1b78c32887e6f9cd9a25849ddfcb05da8de9e7ef0462d6c3475168f13b635f00",
+        "matchBy": "1791053576",
+        "funded": "13340000"
+      },
+      "tx": "0x5f5603c6a6b3f941dadbe65d6145b296058b401d056849a5fe7ef6479126ed63",
+      "block": 128257307,
+      "logIndex": 1,
+      "time": 1791046377
+    },
+    {
+      "name": "Offered",
+      "args": {
+        "id": "1",
+        "seller": "0x94BC4993eCb5615BF3549AB8Fe963DAc23301c42",
+        "epoch": "102",
+        "index": "7",
+        "priceCents": "1120",
+        "acceptBy": "1791047355"
+      },
+      "tx": "0x6c3d691a04ddc97745ace75ab48516835070fee4b0817df40ec22618e10e745b",
+      "block": 128257723,
+      "logIndex": 0,
+      "time": 1791046455
+    },
+    {
+      "name": "Offered",
+      "args": {
+        "id": "2",
+        "seller": "0xd913E048DD101ebc6Fb4B45cc0922b7cbb5435e5",
+        "epoch": "102",
+        "index": "6",
+        "priceCents": "1120",
+        "acceptBy": "1791047357"
+      },
+      "tx": "0x08c4561e55a038001b1e8323ac684be61e4b8d03d40f6d7a4e300ff36801ff36",
+      "block": 128257736,
+      "logIndex": 0,
+      "time": 1791046457
+    },
+    {
+      "name": "Refunded",
+      "args": {
+        "id": "2",
+        "buyer": "0xE2858f35B3d46645fF72e3F613a4e0D265C58C4d",
+        "refund": "13340000",
+        "bondToBuyer": "0",
+        "bondToSeller": "0",
+        "why": 0
+      },
+      "tx": "0xf1cc77952eb4ab8a976787aed8806defcc7e0027740e9a0783c7107cb1909c7f",
+      "block": 128257757,
+      "logIndex": 3,
+      "time": 1791046460
+    },
+    {
+      "name": "Accepted",
+      "args": {
+        "id": "1",
+        "seller": "0x94BC4993eCb5615BF3549AB8Fe963DAc23301c42",
+        "bond": "2240000",
+        "shipBy": "1791048264"
+      },
+      "tx": "0x93e04ea9b25f35b773aab8bee177965470dbe084dbbe48b9a3dfb0c8bb0ae6c2",
+      "block": 128257775,
+      "logIndex": 0,
+      "time": 1791046464
+    },
+    {
+      "name": "Shipped",
+      "args": {
+        "id": "1",
+        "seller": "0x94BC4993eCb5615BF3549AB8Fe963DAc23301c42",
+        "shipmentHash": "0x73390e634bef8dd3570f12b97ff9896554aa80074a089eb176d31dc50b261a51",
+        "verifyBy": "1791048266"
+      },
+      "tx": "0x9793f890994aa7b462477c46bd14432747afdb440e8ff37cb771b6dc94a92cb6",
+      "block": 128257786,
+      "logIndex": 0,
+      "time": 1791046466
+    },
+    {
+      "name": "Attested",
+      "args": {
+        "id": "1",
+        "delivered": true,
+        "receivedSku": "0x83ea648faca5fa4f9436db1f2072bb560ae5c62a7488162deb5c60312086a81b",
+        "receiptHash": "0x9229ada7d7629fa4182d732e7de06ee6c57639a8024a626ee1dc8218bf655073",
+        "releaseAfter": "1791047069"
+      },
+      "tx": "0x2c9e842c4d01589d6bb2f3a11d04d887fc0b65e166d8b3aad23d54f7e8b10310",
+      "block": 128257802,
+      "logIndex": 0,
+      "time": 1791046469
+    },
+    {
+      "name": "Released",
+      "args": {
+        "id": "1",
+        "seller": "0x94BC4993eCb5615BF3549AB8Fe963DAc23301c42",
+        "paid": "11200000",
+        "refundedToBuyer": "2140000",
+        "bondReturned": "2240000",
+        "why": 0,
+        "caller": "0xE2858f35B3d46645fF72e3F613a4e0D265C58C4d"
+      },
+      "tx": "0xfeecf0c04aa5ba2f6657e22bf5c077c7dbb67f9f106abb806aa4b5e4fc5f01ed",
+      "block": 128257819,
+      "logIndex": 2,
+      "time": 1791046472
+    }
+  ],
+  "deployBlock": 128256841
+}

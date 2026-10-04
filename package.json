@@ -1,0 +1,11 @@
+{
+  "name": "skudesk",
+  "private": true,
+  "version": "1.0.0",
+  "engines": { "node": ">=22.18.0" },
+  "workspaces": ["apps/*", "packages/*"],
+  "scripts": {
+    "dev": "npm run dev --workspace apps/web",
+    "build": "npm run build --workspace apps/web"
+  }
+}

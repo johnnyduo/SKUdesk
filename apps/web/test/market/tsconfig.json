@@ -1,0 +1,8 @@
+{
+  "compilerOptions": {
+    "target": "es2022", "module": "es2022", "moduleResolution": "bundler", "lib": ["es2023", "dom", "dom.iterable"], "jsx": "react-jsx",
+    "types": [], "strict": true, "noEmit": true, "skipLibCheck": true, "allowImportingTsExtensions": true, "resolveJsonModule": true, "isolatedModules": true
+  },
+  "include": ["../../src/lib/market*.ts", "../../src/lib/agents.ts", "../../src/components/market/AgentsRound.tsx", "../../src/components/market/Tape.tsx", "../../src/components/market/SealedBook.tsx", "../../src/components/market/RecentEpochs.tsx", "../../src/components/market/PriceChart.tsx", "../../src/lib/asset-switcher.ts", "../../src/components/market/AssetSwitcher.tsx"],
+  "exclude": ["../../src/lib/*.test.ts"]
+}

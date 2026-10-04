@@ -1,0 +1,13 @@
+---
+import { isReal, chainId, core, addrUrl } from './lib';
+const href = addrUrl(core);
+---
+{isReal ? (
+  <a class="dk-tag real" href={href ?? undefined} target="_blank" rel="noopener noreferrer" title="SKUdeskCore on the Robinhood Chain testnet explorer">
+    <i aria-hidden="true"></i>Robinhood Chain Testnet<span class="dk-tag-link">explorer</span>
+  </a>
+) : (
+  <span class="dk-tag dev" role="note" title={`Numbers come from a local test chain (chain id ${chainId}), not the real Robinhood Chain run.`}>
+    <i aria-hidden="true"></i>DEV FIXTURE DATA
+  </span>
+)}
